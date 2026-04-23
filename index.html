@@ -10,51 +10,52 @@
     <main class="layout">
       <section class="panel hero">
         <div class="hero-copy">
-          <p class="eyebrow">Deterministic Physics Laboratory</p>
+          <p class="eyebrow" data-i18n="hero_eyebrow">Deterministic Physics Laboratory</p>
           <h1>NeuroBallistics</h1>
-          <p class="lede">
+          <p class="lede" data-i18n="hero_lede">
             Aim the turret with the mouse. Hold the left mouse button or press
             <kbd>Space</kbd> to fire. Tune gravity, friction, ball mass, and muzzle
             speed in real time.
           </p>
           <div class="hero-actions">
-            <a class="cta primary" href="#lab">Launch Experiment</a>
-            <button class="cta secondary" id="reset-sim" type="button">Reset Scene</button>
+            <a class="cta primary" href="#lab" data-i18n="hero_launch">Launch Experiment</a>
+            <button class="cta secondary" id="reset-sim" type="button" data-i18n="hero_reset">Reset Scene</button>
+            <button class="cta secondary" id="toggle-language" type="button" aria-label="Toggle language">ES</button>
           </div>
         </div>
         <div class="hud">
-          <div><span>Projectiles</span><strong id="projectile-count">0</strong></div>
-          <div><span>Last Speed</span><strong id="last-speed">0</strong></div>
-          <div><span>Sim Time</span><strong id="sim-time">0.00s</strong></div>
-          <div><span>Collisions</span><strong id="collision-count">0</strong></div>
-          <div><span>Hits</span><strong id="hit-count">0</strong></div>
-          <div><span>Score</span><strong id="score-count">0</strong></div>
-          <div><span>Accuracy</span><strong id="accuracy">0%</strong></div>
-          <div><span>Mode</span><strong id="mode-label">Manual</strong></div>
-          <div><span>Status</span><strong id="status-label">Ready</strong></div>
+          <div><span data-i18n="hud_projectiles">Projectiles</span><strong id="projectile-count">0</strong></div>
+          <div><span data-i18n="hud_last_speed">Last Speed</span><strong id="last-speed">0</strong></div>
+          <div><span data-i18n="hud_sim_time">Sim Time</span><strong id="sim-time">0.00s</strong></div>
+          <div><span data-i18n="hud_collisions">Collisions</span><strong id="collision-count">0</strong></div>
+          <div><span data-i18n="hud_hits">Hits</span><strong id="hit-count">0</strong></div>
+          <div><span data-i18n="hud_score">Score</span><strong id="score-count">0</strong></div>
+          <div><span data-i18n="hud_accuracy">Accuracy</span><strong id="accuracy">0%</strong></div>
+          <div><span data-i18n="hud_mode">Mode</span><strong id="mode-label">Manual</strong></div>
+          <div><span data-i18n="hud_status">Status</span><strong id="status-label">Ready</strong></div>
         </div>
       </section>
 
       <section class="panel story">
         <article>
-          <h2>What This Demonstrates</h2>
-          <p>
+          <h2 data-i18n="story_1_title">What This Demonstrates</h2>
+          <p data-i18n="story_1_body">
             This prototype explores a deterministic 2D ballistic sandbox built with the
             native Canvas API. The simulation runs on a fixed timestep, exposes live
             parameters, and keeps physics logic separate from presentation.
           </p>
         </article>
         <article>
-          <h2>Why It Matters</h2>
-          <p>
+          <h2 data-i18n="story_2_title">Why It Matters</h2>
+          <p data-i18n="story_2_body">
             The goal is not just a toy cannon. It is a compact systems project that shows
             simulation thinking, UI feedback loops, collision handling, and a foundation
             for future AI-driven aiming or reinforcement-learning experiments.
           </p>
         </article>
         <article>
-          <h2>How To Use It</h2>
-          <p>
+          <h2 data-i18n="story_3_title">How To Use It</h2>
+          <p data-i18n="story_3_body">
             Move the mouse to rotate the turret, click to fire, hold click or press
             <kbd>Space</kbd> for repeated fire, and tweak the sliders to observe how mass,
             gravity, friction, and launch speed reshape the trajectories.
@@ -69,31 +70,31 @@
 
         <aside class="controls" aria-label="Simulation controls">
           <label>
-            <span>Gravity</span>
+            <span data-i18n="control_gravity">Gravity</span>
             <input id="gravity" type="range" min="50" max="300" step="1" value="160" />
             <output id="gravity-value">160</output>
           </label>
 
           <label>
-            <span>Ground Friction</span>
+            <span data-i18n="control_friction">Ground Friction</span>
             <input id="friction" type="range" min="0" max="0.95" step="0.01" value="0.72" />
             <output id="friction-value">0.72</output>
           </label>
 
           <label>
-            <span>Ball Mass</span>
+            <span data-i18n="control_mass">Ball Mass</span>
             <input id="mass" type="range" min="0.5" max="6" step="0.1" value="1.5" />
             <output id="mass-value">1.5</output>
           </label>
 
           <label>
-            <span>Muzzle Speed</span>
+            <span data-i18n="control_speed">Muzzle Speed</span>
             <input id="speed" type="range" min="180" max="900" step="5" value="520" />
             <output id="speed-value">520</output>
           </label>
 
           <div class="buttons">
-            <button id="clear-projectiles" type="button">Clear Balls</button>
+            <button id="clear-projectiles" type="button" data-i18n="btn_clear">Clear Balls</button>
             <button id="toggle-trails" type="button">Trails: On</button>
             <button id="toggle-trajectory" type="button">Trajectory: On</button>
             <button id="toggle-autofire" type="button">Auto Fire: Off</button>
@@ -103,7 +104,7 @@
       </section>
 
       <section class="panel footer-card">
-        <p>
+        <p data-i18n="footer_body">
           Built as a static browser project with HTML, CSS and Canvas-rendered JavaScript.
           No external physics engine, no backend, no framework dependency.
         </p>

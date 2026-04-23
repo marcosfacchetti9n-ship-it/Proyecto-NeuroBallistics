@@ -486,6 +486,138 @@ const trajectoryButton = document.getElementById("toggle-trajectory");
 const autoFireButton = document.getElementById("toggle-autofire");
 const aiAimButton = document.getElementById("toggle-ai");
 const resetButton = document.getElementById("reset-sim");
+const languageButton = document.getElementById("toggle-language");
+
+const translations = {
+  en: {
+    hero_eyebrow: "Deterministic Physics Laboratory",
+    hero_lede:
+      "Aim the turret with the mouse. Hold the left mouse button or press <kbd>Space</kbd> to fire. Tune gravity, friction, ball mass, and muzzle speed in real time.",
+    hero_launch: "Launch Experiment",
+    hero_reset: "Reset Scene",
+    hud_projectiles: "Projectiles",
+    hud_last_speed: "Last Speed",
+    hud_sim_time: "Sim Time",
+    hud_collisions: "Collisions",
+    hud_hits: "Hits",
+    hud_score: "Score",
+    hud_accuracy: "Accuracy",
+    hud_mode: "Mode",
+    hud_status: "Status",
+    story_1_title: "What This Demonstrates",
+    story_1_body:
+      "This prototype explores a deterministic 2D ballistic sandbox built with the native Canvas API. The simulation runs on a fixed timestep, exposes live parameters, and keeps physics logic separate from presentation.",
+    story_2_title: "Why It Matters",
+    story_2_body:
+      "The goal is not just a toy cannon. It is a compact systems project that shows simulation thinking, UI feedback loops, collision handling, and a foundation for future AI-driven aiming or reinforcement-learning experiments.",
+    story_3_title: "How To Use It",
+    story_3_body:
+      "Move the mouse to rotate the turret, click to fire, hold click or press <kbd>Space</kbd> for repeated fire, and tweak the sliders to observe how mass, gravity, friction, and launch speed reshape the trajectories.",
+    control_gravity: "Gravity",
+    control_friction: "Ground Friction",
+    control_mass: "Ball Mass",
+    control_speed: "Muzzle Speed",
+    btn_clear: "Clear Balls",
+    footer_body:
+      "Built as a static browser project with HTML, CSS and Canvas-rendered JavaScript. No external physics engine, no backend, no framework dependency.",
+    mode_manual: "Manual",
+    mode_auto: "Auto",
+    mode_ai: "AI",
+    status_ready: "Ready",
+    status_cleared: "Cleared",
+    status_scene_reset: "Scene reset",
+    status_firing: "Firing",
+    status_ai_firing: "AI firing",
+    status_ai_hit: "AI hit!",
+    status_hit: "Hit!",
+    status_ai_armed: "AI armed",
+    status_manual_control: "Manual control",
+    status_ai_no_solution: "AI: No solution"
+  },
+  es: {
+    hero_eyebrow: "Laboratorio de Física Determinista",
+    hero_lede:
+      "Apuntá la torreta con el mouse. Mantené el click izquierdo o presioná <kbd>Space</kbd> para disparar. Ajustá gravedad, fricción, masa y velocidad inicial en tiempo real.",
+    hero_launch: "Iniciar Experimento",
+    hero_reset: "Reiniciar Escena",
+    hud_projectiles: "Proyectiles",
+    hud_last_speed: "Velocidad",
+    hud_sim_time: "Tiempo",
+    hud_collisions: "Colisiones",
+    hud_hits: "Aciertos",
+    hud_score: "Puntaje",
+    hud_accuracy: "Precisión",
+    hud_mode: "Modo",
+    hud_status: "Estado",
+    story_1_title: "Qué demuestra",
+    story_1_body:
+      "Este prototipo explora un sandbox balístico 2D determinista hecho con Canvas nativo. La simulación corre con timestep fijo, expone parámetros en vivo y separa la física de la presentación.",
+    story_2_title: "Por qué importa",
+    story_2_body:
+      "La idea no es solo un cañón de juguete: es un proyecto de sistemas compacto que muestra simulación, feedback UI, colisiones y una base para experiments de aiming con IA o reinforcement learning.",
+    story_3_title: "Cómo usarlo",
+    story_3_body:
+      "Mové el mouse para rotar la torreta, hacé click para disparar, mantené click o presioná <kbd>Space</kbd> para disparo continuo, y ajustá los sliders para ver cómo cambian las trayectorias.",
+    control_gravity: "Gravedad",
+    control_friction: "Fricción (suelo)",
+    control_mass: "Masa",
+    control_speed: "Velocidad inicial",
+    btn_clear: "Limpiar bolas",
+    footer_body:
+      "Proyecto estático en el navegador con HTML, CSS y JavaScript renderizado en Canvas. Sin motor de física externo, sin backend, sin framework.",
+    mode_manual: "Manual",
+    mode_auto: "Auto",
+    mode_ai: "IA",
+    status_ready: "Listo",
+    status_cleared: "Limpio",
+    status_scene_reset: "Escena reiniciada",
+    status_firing: "Disparando",
+    status_ai_firing: "IA disparando",
+    status_ai_hit: "¡IA acertó!",
+    status_hit: "¡Acierto!",
+    status_ai_armed: "IA activada",
+    status_manual_control: "Control manual",
+    status_ai_no_solution: "IA: sin solución"
+  }
+};
+
+let language = "en";
+
+function t(key) {
+  return translations[language]?.[key] ?? translations.en[key] ?? key;
+}
+
+function applyTranslations() {
+  document.documentElement.lang = language;
+  const nodes = document.querySelectorAll("[data-i18n]");
+  for (const node of nodes) {
+    const key = node.getAttribute("data-i18n");
+    if (!key) continue;
+    node.innerHTML = t(key);
+  }
+  languageButton.textContent = language === "en" ? "ES" : "EN";
+  syncButtonLabels();
+  // Keep mode consistent after translation.
+  updateModeLabel();
+}
+
+function updateModeLabel() {
+  modeLabelEl.textContent = inputState.aiAim ? t("mode_ai") : inputState.autoFire ? t("mode_auto") : t("mode_manual");
+}
+
+function syncButtonLabels() {
+  const on = language === "es" ? "On" : "On";
+  const off = language === "es" ? "Off" : "Off";
+  const trailsLabel = language === "es" ? "Estelas" : "Trails";
+  const trajectoryLabel = language === "es" ? "Trayectoria" : "Trajectory";
+  const autoFireLabel = language === "es" ? "Auto Disparo" : "Auto Fire";
+  const aiAimLabel = language === "es" ? "Apuntado IA" : "AI Aim";
+
+  trailButton.textContent = `${trailsLabel}: ${renderer.showTrails ? on : off}`;
+  trajectoryButton.textContent = `${trajectoryLabel}: ${inputState.showTrajectory ? on : off}`;
+  autoFireButton.textContent = `${autoFireLabel}: ${inputState.autoFire ? on : off}`;
+  aiAimButton.textContent = `${aiAimLabel}: ${inputState.aiAim ? on : off}`;
+}
 
 const world = new PhysicsWorld(canvas.width, canvas.height);
 const turret = new Turret(120, canvas.height - 54);
@@ -661,7 +793,7 @@ function tryFire() {
     const muzzle = turret.basePosition.add(Vector2D.fromAngle(turret.angle, turret.barrelLength));
     const solution = aimWithLead(muzzle, target.position, target.velocity, world.muzzleSpeed, world.gravity);
     if (solution === null || solution.angle === null) {
-      statusLabelEl.textContent = "AI: No solution";
+      statusLabelEl.textContent = t("status_ai_no_solution");
       return;
     }
 
@@ -675,7 +807,7 @@ function tryFire() {
     inputState.queuedShots -= 1;
   }
   lastSpeedEl.textContent = `${projectile.velocity.magnitude().toFixed(0)} px/s`;
-  statusLabelEl.textContent = inputState.aiAim ? "AI firing" : "Firing";
+  statusLabelEl.textContent = inputState.aiAim ? t("status_ai_firing") : t("status_firing");
 }
 
 function queueShot() {
@@ -719,7 +851,7 @@ window.addEventListener("keyup", (event) => {
 clearButton.addEventListener("click", () => {
   world.projectiles = [];
   lastSpeedEl.textContent = "0 px/s";
-  statusLabelEl.textContent = "Cleared";
+  statusLabelEl.textContent = t("status_cleared");
 });
 
 trailButton.addEventListener("click", () => {
@@ -729,16 +861,18 @@ trailButton.addEventListener("click", () => {
 
 trajectoryButton.addEventListener("click", () => {
   inputState.showTrajectory = !inputState.showTrajectory;
-  trajectoryButton.textContent = `Trajectory: ${inputState.showTrajectory ? "On" : "Off"}`;
+  syncButtonLabels();
 });
 
 autoFireButton.addEventListener("click", () => {
   inputState.autoFire = !inputState.autoFire;
   inputState.firing = inputState.aiAim ? true : inputState.autoFire;
-  autoFireButton.textContent = `Auto Fire: ${inputState.autoFire ? "On" : "Off"}`;
+  syncButtonLabels();
   if (!inputState.aiAim) {
-    modeLabelEl.textContent = inputState.autoFire ? "Auto" : "Manual";
-    statusLabelEl.textContent = inputState.autoFire ? "Auto firing armed" : "Manual control";
+    updateModeLabel();
+    statusLabelEl.textContent = inputState.autoFire
+      ? (language === "es" ? "Auto listo" : "Auto firing armed")
+      : t("status_manual_control");
   }
 });
 
@@ -779,11 +913,16 @@ function stepTarget(dt) {
 
 aiAimButton.addEventListener("click", () => {
   inputState.aiAim = !inputState.aiAim;
-  aiAimButton.textContent = `AI Aim: ${inputState.aiAim ? "On" : "Off"}`;
-  modeLabelEl.textContent = inputState.aiAim ? "AI" : inputState.autoFire ? "Auto" : "Manual";
-  statusLabelEl.textContent = inputState.aiAim ? "AI armed" : "Manual control";
+  syncButtonLabels();
+  updateModeLabel();
+  statusLabelEl.textContent = inputState.aiAim ? t("status_ai_armed") : t("status_manual_control");
   inputState.firing = inputState.aiAim ? true : inputState.autoFire;
   inputState.queuedShots = 0;
+});
+
+languageButton.addEventListener("click", () => {
+  language = language === "en" ? "es" : "en";
+  applyTranslations();
 });
 
 resetButton.addEventListener("click", () => {
@@ -791,7 +930,7 @@ resetButton.addEventListener("click", () => {
   inputState.firing = inputState.aiAim ? true : inputState.autoFire;
   inputState.queuedShots = 0;
   lastSpeedEl.textContent = "0 px/s";
-  statusLabelEl.textContent = "Scene reset";
+  statusLabelEl.textContent = t("status_scene_reset");
   hitCount = 0;
   scoreCount = 0;
   shotsFired = 0;
@@ -800,6 +939,9 @@ resetButton.addEventListener("click", () => {
 
 syncControls();
 respawnTarget();
+syncButtonLabels();
+updateModeLabel();
+applyTranslations();
 
 let accumulator = 0;
 let lastTimestamp = performance.now();
@@ -836,7 +978,7 @@ function frame(timestamp) {
         projectile.alive = false;
         hitCount += 1;
         scoreCount += 10;
-        statusLabelEl.textContent = inputState.aiAim ? "AI hit!" : "Hit!";
+        statusLabelEl.textContent = inputState.aiAim ? t("status_ai_hit") : t("status_hit");
         respawnTarget();
       }
     }
@@ -851,7 +993,7 @@ function frame(timestamp) {
   const accuracy = shotsFired > 0 ? (hitCount / shotsFired) * 100 : 0;
   accuracyEl.textContent = `${accuracy.toFixed(0)}%`;
   if (world.projectiles.length === 0 && !inputState.firing && inputState.queuedShots === 0) {
-    statusLabelEl.textContent = "Ready";
+    statusLabelEl.textContent = t("status_ready");
   }
   renderer.render();
   const ctx = renderer.context;
