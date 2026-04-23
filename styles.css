@@ -1,0 +1,251 @@
+:root {
+  --bg: #f3efe3;
+  --panel: rgba(255, 250, 240, 0.78);
+  --ink: #1e293b;
+  --muted: #5b6473;
+  --accent: #c2410c;
+  --accent-soft: #fb923c;
+  --line: rgba(30, 41, 59, 0.12);
+  --shadow: 0 24px 70px rgba(30, 41, 59, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  background:
+    radial-gradient(circle at top left, rgba(251, 146, 60, 0.25), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(14, 116, 144, 0.18), transparent 28%),
+    linear-gradient(135deg, #f6f1e7 0%, #e8dfd0 100%);
+}
+
+.layout {
+  width: min(1380px, calc(100vw - 32px));
+  margin: 24px auto;
+  display: grid;
+  gap: 20px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.hero {
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 24px;
+  align-items: end;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 4.8vw, 4.8rem);
+  line-height: 0.95;
+  font-weight: 600;
+}
+
+.lede {
+  margin: 14px 0 0;
+  max-width: 58ch;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.hero-actions {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cta.primary {
+  color: white;
+  background: linear-gradient(135deg, #c2410c, #ea580c);
+}
+
+.cta.secondary {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.hud div,
+.controls label,
+.buttons button {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.hud div {
+  padding: 16px;
+}
+
+.hud span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.hud strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.5rem;
+}
+
+.lab {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 18px;
+}
+
+.story {
+  padding: 24px 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.story article {
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.story h2 {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+}
+
+.story p,
+.footer-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.canvas-wrap {
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, #dcecf4 0%, #f4ede4 54%, #d8c7a8 54%, #cab38f 100%);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.controls {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.controls label {
+  padding: 14px 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.controls span,
+output {
+  font-size: 0.95rem;
+}
+
+output {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.buttons {
+  display: grid;
+  gap: 10px;
+}
+
+.buttons button {
+  padding: 14px 16px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.footer-card {
+  padding: 18px 24px;
+}
+
+kbd {
+  padding: 0.15rem 0.45rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.9em;
+}
+
+@media (max-width: 980px) {
+  .hero,
+  .lab,
+  .story {
+    grid-template-columns: 1fr;
+  }
+
+  .hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .hud {
+    grid-template-columns: 1fr;
+  }
+}
