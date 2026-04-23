@@ -1,74 +1,77 @@
 # NeuroBallistics
 
-I built NeuroBallistics as a compact browser-based physics laboratory to demonstrate how I think about simulation systems, interactive tooling, and clean front-end architecture.
+Construí **NeuroBallistics** como un laboratorio compacto de física 2D en el navegador para mostrar cómo pienso y trabajo en proyectos de simulación: **arquitectura clara**, **determinismo**, herramientas interactivas y matemática implementada a mano (sin motores externos).
 
-The project is a static HTML/CSS/JavaScript experience rendered with the native Canvas API. At its core, it lets the user control a turret, fire ballistic projectiles, and observe how gravity, friction, projectile mass, and launch speed change the resulting motion and collisions in real time.
+Es una experiencia **100% estática** (HTML/CSS/JavaScript + Canvas nativo). En la demo se controla una torreta, se disparan proyectiles balísticos y se observa en tiempo real cómo cambian las trayectorias y colisiones al ajustar parámetros como gravedad, fricción, masa y velocidad inicial.
 
-## Quick Demo
+## Demo rápida (para probar en 30 segundos)
 
-- Open `index.html` in any browser (no install).
-- Toggle `AI Aim` to watch the turret lead a moving target and score hits.
-- Toggle `Trajectory` to see a predicted ballistic arc based on the current parameters.
+- **Live demo**: https://neuroballistics.netlify.app/
+- Alternativa local: abrí `index.html` (no requiere instalación).
+- Activá `AI Aim` para ver a la torreta **apuntar con lead** a un objetivo en movimiento y sumar hits.
+- Activá `Trajectory` para ver una **predicción de trayectoria** basada en los parámetros actuales.
 
-## Why I Built It
+## Por qué lo hice
 
-I wanted to create a small but complete project that felt closer to an engine prototype than a visual toy. The goal was to combine:
+Quise construir un proyecto chico pero completo, más cercano a un prototipo de engine que a un “toy demo”. El objetivo fue combinar:
 
-- deterministic fixed-timestep simulation
-- custom vector math instead of relying on a physics package
-- collision handling between projectiles and the environment
-- a browser-friendly control surface for live parameter tuning
-- a presentation layer that is simple to run, inspect, and extend
+- simulación determinista con **fixed timestep**
+- matemática propia (vectores / proyecciones / normales) sin depender de un motor de física
+- colisiones (proyectil-proyectil, límites y obstáculos circulares)
+- una UI simple para **tuning en vivo** de parámetros
+- una base fácil de ejecutar, inspeccionar y extender
 
-This made NeuroBallistics a good way to show both product thinking and systems thinking in one project.
+Esto me permite mostrar en un solo repo **product thinking** (feedback loop, UX, “demoable”) y **systems thinking** (simulación, estabilidad, arquitectura).
 
-## What The Demo Includes
+## Qué incluye la demo
 
-- A visible turret that aims with the mouse
-- Click-to-fire and hold-to-fire controls
-- A moving target with hits/score/accuracy telemetry
-- An AI aiming mode that solves a ballistic firing angle and leads the target
-- A trajectory prediction overlay (toggleable)
-- Projectile-to-projectile collisions
-- Collisions with walls, floor, ceiling, and circular obstacles
-- Real-time sliders for gravity, friction, ball mass, and muzzle speed
-- A lightweight HUD with simulation telemetry
-- A static deployment model with no backend required
+- torreta visible con apuntado por mouse (modo manual)
+- disparo con click/hold y con `Space`
+- objetivo en movimiento + telemetría: **Hits / Score / Accuracy**
+- modo `AI Aim`: resuelve un ángulo de disparo balístico y **anticipa la posición futura** del objetivo (lead)
+- overlay de `Trajectory` (predicción de curva balística, toggleable)
+- colisiones entre proyectiles
+- colisiones con paredes/suelo/techo y obstáculos circulares
+- sliders en vivo: gravedad, fricción, masa, velocidad inicial
+- deploy estático (sin backend)
 
-## Technical Notes
+## Notas técnicas (highlights)
 
-I kept the simulation loop on a fixed timestep so projectile behavior stays stable across different frame rates. The math and physics are intentionally implemented manually to keep the behavior transparent and tunable.
+- **Fixed timestep**: la simulación avanza con `dt` constante usando acumulador; el render corre a framerate variable.
+- **Respuesta por impulsos**: colisiones y fricción resueltas con normales/tangentes y producto punto.
+- **Algebra lineal aplicada**: el código usa operaciones vectoriales (dot, normalización, proyección) para resolver dinámica y contacto.
 
-Even though the browser demo is intentionally lightweight, I also laid out the project with a more modular engine-style structure under `src/` so it can evolve into a more formal TypeScript architecture over time.
+Además de la demo en `app.js`, dejé una versión más modular estilo “engine” en `src/` (TypeScript) para evolucionar a una arquitectura más formal.
 
-## Running The Project
+## Cómo correrlo
 
-Because the final demo is fully static, the quickest way to run it is simply to open `index.html` in a browser.
+La demo es estática: abrí `index.html` en el navegador.
 
-Controls:
+Controles:
 
-- Mouse move: aim (when `AI Aim` is off)
-- Click / hold click: fire
-- Space: fire while held
-- Sliders: adjust gravity, friction, mass, muzzle speed
+- mouse: apuntar (cuando `AI Aim` está apagado)
+- click / mantener click: disparar
+- `Space`: disparo mientras se mantiene presionado
+- sliders: gravedad, fricción, masa, velocidad inicial
+- botones: trails / trajectory / auto fire / AI aim
 
-Files of interest:
+Archivos importantes:
 
-- `index.html` for the page structure
-- `styles.css` for the UI and presentation
-- `app.js` for the simulation, rendering, and input loop
-- `src/` for the more formal engine-oriented architecture draft
+- `index.html`: estructura de la página
+- `styles.css`: UI y estilo
+- `app.js`: simulación + render + input + HUD (demo principal)
+- `src/`: arquitectura modular en TypeScript (borrador de engine)
 
-## What I'd Build Next
+## Próximos pasos (si lo continúo)
 
-If I continued iterating on NeuroBallistics, the next areas I would explore are:
+Si continúo iterando, exploraría:
 
-- richer target behaviors and score rules (combos, timed runs)
-- obstacle-aware aiming (bank shots)
-- different material behaviors and projectile types
-- a reward function + offline replay for reinforcement learning experiments
-- full migration of the browser demo to the modular TypeScript architecture
+- reglas de score más ricas (combos, runs por tiempo)
+- aiming “obstacle-aware” (bank shots)
+- materiales / proyectiles distintos
+- reward function + replays para experimentos de **reinforcement learning**
+- migración completa de la demo a la arquitectura TypeScript
 
-## Repository Goal
+## Objetivo del repositorio
 
-I see this project as a portfolio piece that highlights how I approach interactive simulations: start with a solid systems foundation, keep the user feedback loop tight, and make the result easy to run and understand.
+Este repo es una pieza de portfolio para mostrar cómo construyo simulaciones interactivas: una base de sistemas sólida, un loop de feedback rápido para el usuario, y un resultado fácil de ejecutar y entender.
