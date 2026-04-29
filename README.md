@@ -1,77 +1,55 @@
 # NeuroBallistics
 
-Construí **NeuroBallistics** como un laboratorio compacto de física 2D en el navegador para mostrar cómo pienso y trabajo en proyectos de simulación: **arquitectura clara**, **determinismo**, herramientas interactivas y matemática implementada a mano (sin motores externos).
+Construí **NeuroBallistics** como un laboratorio de física 2D en el navegador para mostrar cómo pienso cuando trabajo en sistemas interactivos: una mezcla de simulación determinista, feedback visual inmediato, arquitectura clara y una experiencia que se puede probar sin instalar nada.
 
-Es una experiencia **100% estática** (HTML/CSS/JavaScript + Canvas nativo). En la demo se controla una torreta, se disparan proyectiles balísticos y se observa en tiempo real cómo cambian las trayectorias y colisiones al ajustar parámetros como gravedad, fricción, masa y velocidad inicial.
+La demo es 100% estática: **HTML, CSS y JavaScript con Canvas nativo**. No usa framework, backend ni motor de física externo.
 
-## Demo rápida (para probar en 30 segundos)
+## Qué se puede probar
 
-- **Live demo**: https://neuroballistics.netlify.app/
-- Alternativa local: abrí `index.html` (no requiere instalación).
-- Activá `AI Aim` para ver a la torreta **apuntar con lead** a un objetivo en movimiento y sumar hits.
-- Activá `Trajectory` para ver una **predicción de trayectoria** basada en los parámetros actuales.
+En la primera pantalla se puede controlar una torreta, disparar proyectiles balísticos y ajustar parámetros físicos en tiempo real. También agregué un modo de apuntado asistido por IA que calcula un ángulo de disparo con anticipación sobre un objetivo en movimiento.
+
+Incluye:
+
+- Apuntado manual con mouse o touch.
+- Disparo con click, mantener click o `Space`.
+- Modo `AI Aim` para apuntado balístico asistido.
+- Objetivo móvil con score, hits, accuracy, streak y high score persistente.
+- Trayectoria predictiva toggleable.
+- Colisiones entre proyectiles.
+- Colisiones con paredes, suelo, techo y obstáculos circulares.
+- Partículas de impacto y feedback visual en disparos/aciertos.
+- Sliders en vivo para gravedad, fricción, masa y velocidad inicial.
+- Pausa, reset, limpieza de bolas y generación de nueva arena.
 
 ## Por qué lo hice
 
-Quise construir un proyecto chico pero completo, más cercano a un prototipo de engine que a un “toy demo”. El objetivo fue combinar:
+Quise construir una pieza de portfolio que no fuera solo visual. Me interesaba mostrar un pequeño sistema completo: input, render, estado, tuning en vivo, física, colisiones y una capa de comportamiento automático.
 
-- simulación determinista con **fixed timestep**
-- matemática propia (vectores / proyecciones / normales) sin depender de un motor de física
-- colisiones (proyectil-proyectil, límites y obstáculos circulares)
-- una UI simple para **tuning en vivo** de parámetros
-- una base fácil de ejecutar, inspeccionar y extender
+El resultado es una demo simple de abrir, pero con decisiones técnicas visibles:
 
-Esto me permite mostrar en un solo repo **product thinking** (feedback loop, UX, “demoable”) y **systems thinking** (simulación, estabilidad, arquitectura).
-
-## Qué incluye la demo
-
-- torreta visible con apuntado por mouse (modo manual)
-- disparo con click/hold y con `Space`
-- objetivo en movimiento + telemetría: **Hits / Score / Accuracy**
-- modo `AI Aim`: resuelve un ángulo de disparo balístico y **anticipa la posición futura** del objetivo (lead)
-- overlay de `Trajectory` (predicción de curva balística, toggleable)
-- colisiones entre proyectiles
-- colisiones con paredes/suelo/techo y obstáculos circulares
-- sliders en vivo: gravedad, fricción, masa, velocidad inicial
-- deploy estático (sin backend)
-
-## Notas técnicas (highlights)
-
-- **Fixed timestep**: la simulación avanza con `dt` constante usando acumulador; el render corre a framerate variable.
-- **Respuesta por impulsos**: colisiones y fricción resueltas con normales/tangentes y producto punto.
-- **Algebra lineal aplicada**: el código usa operaciones vectoriales (dot, normalización, proyección) para resolver dinámica y contacto.
-
-Además de la demo en `app.js`, dejé una versión más modular estilo “engine” en `src/` (TypeScript) para evolucionar a una arquitectura más formal.
+- La simulación usa **fixed timestep** para mantener estabilidad entre distintos frame rates.
+- La física está implementada a mano con vectores, normales, tangentes e impulsos.
+- El render se hace con Canvas, separando la lógica de simulación de la presentación.
+- El loop de interacción permite probar hipótesis rápido: cambiar masa, gravedad o fricción y ver el resultado inmediatamente.
 
 ## Cómo correrlo
 
-La demo es estática: abrí `index.html` en el navegador.
+Abrí `index.html` en el navegador.
 
-Controles:
+No requiere instalación. También está listo para publicarse como sitio estático en GitHub Pages, Netlify o cualquier hosting de archivos estáticos.
 
-- mouse: apuntar (cuando `AI Aim` está apagado)
-- click / mantener click: disparar
-- `Space`: disparo mientras se mantiene presionado
-- sliders: gravedad, fricción, masa, velocidad inicial
-- botones: trails / trajectory / auto fire / AI aim
+## Archivos principales
 
-Archivos importantes:
+- `index.html`: estructura de la experiencia.
+- `styles.css`: layout, HUD, controles y estética visual.
+- `app.js`: simulación principal, render, input, IA de apuntado y scoring.
+- `src/`: borrador modular en TypeScript para evolucionar la demo hacia una arquitectura de engine más formal.
+- `SYSTEM_OVERVIEW.md`: explicación de la arquitectura propuesta.
 
-- `index.html`: estructura de la página
-- `styles.css`: UI y estilo
-- `app.js`: simulación + render + input + HUD (demo principal)
-- `src/`: arquitectura modular en TypeScript (borrador de engine)
+## Qué demuestra
 
-## Próximos pasos (si lo continúo)
+Este proyecto muestra que puedo tomar una idea interactiva y convertirla en un prototipo presentable, con foco tanto en experiencia de usuario como en ingeniería. Para mí, el valor está en que el proyecto se puede entender rápido, pero también deja espacio para conversaciones más profundas sobre determinismo, simulación, estructura de código y diseño de sistemas.
 
-Si continúo iterando, exploraría:
+## Próximos pasos
 
-- reglas de score más ricas (combos, runs por tiempo)
-- aiming “obstacle-aware” (bank shots)
-- materiales / proyectiles distintos
-- reward function + replays para experimentos de **reinforcement learning**
-- migración completa de la demo a la arquitectura TypeScript
-
-## Objetivo del repositorio
-
-Este repo es una pieza de portfolio para mostrar cómo construyo simulaciones interactivas: una base de sistemas sólida, un loop de feedback rápido para el usuario, y un resultado fácil de ejecutar y entender.
+Si continuara iterándolo, llevaría la demo completa a TypeScript, agregaría obstáculos con materiales distintos, replay de disparos, objetivos por niveles y una función de recompensa para experimentar con aprendizaje automático.

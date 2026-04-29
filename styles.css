@@ -1,205 +1,225 @@
 :root {
-  --bg: #f3efe3;
-  --panel: rgba(255, 250, 240, 0.78);
-  --ink: #1e293b;
-  --muted: #5b6473;
-  --accent: #c2410c;
-  --accent-soft: #fb923c;
-  --line: rgba(30, 41, 59, 0.12);
-  --shadow: 0 24px 70px rgba(30, 41, 59, 0.16);
+  --page: #eef2f1;
+  --surface: #fbfcf9;
+  --surface-2: #edf4f2;
+  --ink: #17201f;
+  --muted: #5a6661;
+  --line: rgba(23, 32, 31, 0.14);
+  --accent: #0f766e;
+  --accent-2: #d97706;
+  --danger: #b91c1c;
+  --shadow: 0 14px 36px rgba(23, 32, 31, 0.12);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Trebuchet MS", Verdana, sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(251, 146, 60, 0.25), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(14, 116, 144, 0.18), transparent 28%),
-    linear-gradient(135deg, #f6f1e7 0%, #e8dfd0 100%);
+    linear-gradient(rgba(23, 32, 31, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 32, 31, 0.045) 1px, transparent 1px),
+    linear-gradient(135deg, #eef2f1 0%, #f7f4ec 100%);
+  background-size: 36px 36px, 36px 36px, auto;
 }
 
-.layout {
-  width: min(1380px, calc(100vw - 32px));
-  margin: 24px auto;
+button,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(1440px, calc(100vw - 28px));
+  min-height: 100vh;
+  margin: 14px auto 28px;
   display: grid;
-  gap: 20px;
+  gap: 12px;
 }
 
-.panel {
+.command-bar,
+.lab,
+.portfolio-notes {
   border: 1px solid var(--line);
-  border-radius: 28px;
-  background: var(--panel);
+  border-radius: 8px;
+  background: rgba(251, 252, 249, 0.92);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
 }
 
-.hero {
-  padding: 28px 32px;
+.command-bar {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 24px;
-  align-items: end;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(420px, 1.4fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+}
+
+.brand-block {
+  min-width: 0;
 }
 
 .eyebrow {
-  margin: 0 0 10px;
+  margin: 0 0 4px;
   color: var(--accent);
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
   text-transform: uppercase;
-  font-size: 0.78rem;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(2.4rem, 4.8vw, 4.8rem);
-  line-height: 0.95;
-  font-weight: 600;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.2rem;
+  line-height: 1;
+  font-weight: 700;
 }
 
 .lede {
-  margin: 14px 0 0;
-  max-width: 58ch;
+  margin: 8px 0 0;
   color: var(--muted);
-  font-size: 1.05rem;
-  line-height: 1.55;
-}
-
-.hero-actions {
-  margin-top: 22px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0 18px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  text-decoration: none;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.cta.primary {
-  color: white;
-  background: linear-gradient(135deg, #c2410c, #ea580c);
-}
-
-.cta.secondary {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.68);
+  font-size: 0.95rem;
+  line-height: 1.35;
 }
 
 .hud {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(9, minmax(76px, 1fr));
+  gap: 8px;
 }
 
 .hud div,
 .controls label,
-.buttons button {
+.buttons button,
+.telemetry-card,
+.mode-strip,
+.cta,
+.portfolio-notes article {
   border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.66);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
 }
 
 .hud div {
-  padding: 16px;
+  min-height: 64px;
+  padding: 8px 9px;
 }
 
-.hud span {
+.hud span,
+.controls span,
+.telemetry-card span,
+.mode-strip span {
   display: block;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .hud strong {
   display: block;
-  margin-top: 8px;
-  font-size: 1.5rem;
+  margin-top: 6px;
+  font-size: 1.22rem;
+}
+
+.top-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(66px, auto));
+  gap: 8px;
+}
+
+.cta,
+.buttons button {
+  min-height: 42px;
+  padding: 0 12px;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cta.secondary,
+.buttons button {
+  background: var(--surface);
+}
+
+.buttons button:hover,
+.cta:hover {
+  border-color: rgba(15, 118, 110, 0.42);
+  transform: translateY(-1px);
 }
 
 .lab {
-  padding: 18px;
+  min-height: 660px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 310px;
-  gap: 18px;
-}
-
-.story {
-  padding: 24px 28px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.story article {
-  padding: 20px;
-  border-radius: 22px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.6);
-}
-
-.story h2 {
-  margin: 0 0 10px;
-  font-size: 1.15rem;
-}
-
-.story p,
-.footer-card p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.6;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 12px;
+  padding: 12px;
 }
 
 .canvas-wrap {
-  border-radius: 24px;
+  position: relative;
   overflow: hidden;
   border: 1px solid var(--line);
+  border-radius: 8px;
   background:
-    linear-gradient(180deg, #dcecf4 0%, #f4ede4 54%, #d8c7a8 54%, #cab38f 100%);
+    linear-gradient(180deg, #d9eef0 0%, #f6f1e8 57%, #c7b17d 57%, #a78b5b 100%);
 }
 
 canvas {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  min-height: 620px;
   cursor: crosshair;
   touch-action: none;
 }
 
 .controls {
   display: grid;
-  gap: 14px;
+  gap: 10px;
   align-content: start;
 }
 
+.mode-strip,
+.telemetry-card,
 .controls label {
-  padding: 14px 16px;
-  display: grid;
-  gap: 10px;
+  padding: 11px 12px;
 }
 
-.controls span,
-output {
-  font-size: 0.95rem;
+.mode-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(217, 119, 6, 0.12));
+}
+
+.mode-strip strong,
+.telemetry-card strong {
+  font-size: 1.08rem;
+}
+
+.controls label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 10px;
+}
+
+.controls label input {
+  grid-column: 1 / -1;
 }
 
 output {
   color: var(--accent);
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 800;
 }
 
 input[type="range"] {
@@ -207,45 +227,99 @@ input[type="range"] {
   accent-color: var(--accent);
 }
 
+.telemetry-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 7px 10px;
+}
+
 .buttons {
   display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.portfolio-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+  padding: 12px;
 }
 
-.buttons button {
-  padding: 14px 16px;
-  font: inherit;
-  font-weight: 700;
-  color: var(--ink);
-  cursor: pointer;
+.portfolio-notes article {
+  padding: 16px;
 }
 
-.footer-card {
-  padding: 18px 24px;
+.portfolio-notes h2 {
+  margin: 0 0 8px;
+  font-size: 1.02rem;
+}
+
+.portfolio-notes p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.48;
 }
 
 kbd {
-  padding: 0.15rem 0.45rem;
-  border-radius: 8px;
+  padding: 0.12rem 0.36rem;
+  border-radius: 4px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.7);
-  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.86);
+  font-size: 0.88em;
 }
 
-@media (max-width: 980px) {
-  .hero,
-  .lab,
-  .story {
+@media (max-width: 1180px) {
+  .command-bar {
     grid-template-columns: 1fr;
+  }
+
+  .hud {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .top-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 940px) {
+  .lab,
+  .portfolio-notes {
+    grid-template-columns: 1fr;
+  }
+
+  canvas {
+    min-height: 480px;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-shell {
+    width: min(100vw - 16px, 1440px);
+    margin-top: 8px;
+  }
+
+  .command-bar,
+  .lab,
+  .portfolio-notes {
+    padding: 8px;
+  }
+
+  h1 {
+    font-size: 1.9rem;
   }
 
   .hud {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
 
-@media (max-width: 640px) {
-  .hud {
+  .top-actions {
     grid-template-columns: 1fr;
+  }
+
+  canvas {
+    min-height: 380px;
   }
 }

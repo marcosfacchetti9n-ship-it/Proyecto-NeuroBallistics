@@ -45,6 +45,7 @@ class Projectile {
     this.color = color;
     this.alive = true;
     this.restingFrames = 0;
+    this.hasHitTarget = false;
   }
 }
 
@@ -74,20 +75,27 @@ class PhysicsWorld {
     this.projectileMass = 1.5;
     this.muzzleSpeed = 520;
     this.airDrag = 0.0008;
+    this.maxProjectiles = 90;
     this.projectiles = [];
-    this.obstacles = [
-      new CircularObstacle(width * 0.56, height * 0.64, 36),
-      new CircularObstacle(width * 0.72, height * 0.5, 46),
-      new CircularObstacle(width * 0.83, height * 0.7, 28)
-    ];
+    this.obstacles = [];
     this.time = 0;
     this.collisionCount = 0;
+    this.shuffleArena();
   }
 
   reset() {
     this.projectiles = [];
     this.time = 0;
     this.collisionCount = 0;
+  }
+
+  shuffleArena() {
+    const floorY = this.height - 26;
+    this.obstacles = [
+      new CircularObstacle(this.width * 0.48, floorY - 180 - Math.random() * 120, 30 + Math.random() * 14),
+      new CircularObstacle(this.width * 0.66, floorY - 230 - Math.random() * 130, 36 + Math.random() * 18),
+      new CircularObstacle(this.width * 0.82, floorY - 140 - Math.random() * 160, 24 + Math.random() * 18)
+    ];
   }
 
   spawnProjectile(turret) {
@@ -103,6 +111,9 @@ class PhysicsWorld {
       color: `hsl(${18 + Math.random() * 18} 85% ${52 + Math.random() * 8}%)`
     });
     this.projectiles.push(projectile);
+    if (this.projectiles.length > this.maxProjectiles) {
+      this.projectiles.shift();
+    }
     return projectile;
   }
 
@@ -468,6 +479,9 @@ const simTimeEl = document.getElementById("sim-time");
 const collisionCountEl = document.getElementById("collision-count");
 const hitCountEl = document.getElementById("hit-count");
 const scoreCountEl = document.getElementById("score-count");
+const highScoreEl = document.getElementById("high-score");
+const streakCountEl = document.getElementById("streak-count");
+const shotCountEl = document.getElementById("shot-count");
 const accuracyEl = document.getElementById("accuracy");
 const modeLabelEl = document.getElementById("mode-label");
 const statusLabelEl = document.getElementById("status-label");
@@ -486,6 +500,8 @@ const trajectoryButton = document.getElementById("toggle-trajectory");
 const autoFireButton = document.getElementById("toggle-autofire");
 const aiAimButton = document.getElementById("toggle-ai");
 const resetButton = document.getElementById("reset-sim");
+const pauseButton = document.getElementById("toggle-pause");
+const shuffleArenaButton = document.getElementById("shuffle-arena");
 const languageButton = document.getElementById("toggle-language");
 
 const translations = {
@@ -581,7 +597,61 @@ const translations = {
   }
 };
 
-let language = "en";
+Object.assign(translations.en, {
+  hero_lede:
+    "Aim the turret, tune the physics, and use manual or AI-assisted fire to hit a moving target.",
+  hero_reset: "Reset",
+  hud_projectiles: "Balls",
+  hud_high_score: "Best",
+  hud_streak: "Streak",
+  hud_shots: "Shots",
+  story_1_title: "System Feel",
+  story_1_body:
+    "Fixed-timestep simulation, custom vector math, impulse-style collision response, and Canvas rendering keep the prototype inspectable and fast.",
+  story_2_title: "Interaction Loop",
+  story_2_body:
+    "Manual aiming, repeated fire, live tuning, trajectory prediction, hit scoring, and AI aiming make the sandbox feel like a small playable lab.",
+  story_3_title: "Portfolio Angle",
+  story_3_body:
+    "The project is intentionally static and dependency-light, so a recruiter can open it quickly and inspect the core engineering decisions.",
+  btn_shuffle: "New Arena",
+  btn_pause: "Pause",
+  btn_resume: "Resume",
+  status_paused: "Paused",
+  status_arena_ready: "Arena rebuilt"
+});
+
+Object.assign(translations.es, {
+  hero_eyebrow: "Laboratorio de Fisica Determinista",
+  hero_lede:
+    "Apunta la torreta, ajusta la fisica y usa disparo manual o asistido por IA para pegarle a un objetivo en movimiento.",
+  hero_reset: "Reiniciar",
+  hud_projectiles: "Bolas",
+  hud_high_score: "Mejor",
+  hud_streak: "Racha",
+  hud_shots: "Disparos",
+  hud_accuracy: "Precision",
+  story_1_title: "Sensacion de sistema",
+  story_1_body:
+    "Timestep fijo, matematica vectorial propia, respuesta de colisiones por impulso y render en Canvas mantienen el prototipo rapido e inspeccionable.",
+  story_2_title: "Loop de interaccion",
+  story_2_body:
+    "Apuntado manual, disparo continuo, tuning en vivo, trayectoria predictiva, score e IA convierten el sandbox en un laboratorio jugable.",
+  story_3_title: "Angulo portfolio",
+  story_3_body:
+    "El proyecto es estatico y liviano, pensado para que un recruiter pueda abrirlo rapido e inspeccionar las decisiones de ingenieria.",
+  control_friction: "Friccion (suelo)",
+  btn_shuffle: "Nueva arena",
+  btn_pause: "Pausar",
+  btn_resume: "Continuar",
+  status_paused: "Pausado",
+  status_arena_ready: "Arena reconstruida",
+  status_ai_hit: "IA acerto!",
+  status_hit: "Acierto!",
+  status_ai_no_solution: "IA: sin solucion"
+});
+
+let language = "es";
 
 function t(key) {
   return translations[language]?.[key] ?? translations.en[key] ?? key;
@@ -617,6 +687,7 @@ function syncButtonLabels() {
   trajectoryButton.textContent = `${trajectoryLabel}: ${inputState.showTrajectory ? on : off}`;
   autoFireButton.textContent = `${autoFireLabel}: ${inputState.autoFire ? on : off}`;
   aiAimButton.textContent = `${aiAimLabel}: ${inputState.aiAim ? on : off}`;
+  pauseButton.textContent = isPaused ? t("btn_resume") : t("btn_pause");
 }
 
 const world = new PhysicsWorld(canvas.width, canvas.height);
@@ -632,6 +703,11 @@ const target = {
 let hitCount = 0;
 let scoreCount = 0;
 let shotsFired = 0;
+let streakCount = 0;
+let highScore = readHighScore();
+let isPaused = false;
+let statusHoldUntil = 0;
+const impactParticles = [];
 
 const inputState = {
   pointer: new Vector2D(canvas.width * 0.5, canvas.height * 0.3),
@@ -641,6 +717,28 @@ const inputState = {
   aiAim: false,
   showTrajectory: true
 };
+
+function readHighScore() {
+  try {
+    const value = Number(window.localStorage.getItem("neuroballistics:high-score"));
+    return Number.isFinite(value) ? value : 0;
+  } catch (_error) {
+    return 0;
+  }
+}
+
+function saveHighScore(value) {
+  try {
+    window.localStorage.setItem("neuroballistics:high-score", String(value));
+  } catch (_error) {
+    // Local files can run in storage-restricted browser contexts.
+  }
+}
+
+function setStatus(message, holdMs = 900) {
+  statusLabelEl.textContent = message;
+  statusHoldUntil = performance.now() + holdMs;
+}
 
 function syncControls() {
   world.gravity = Number(gravityInput.value);
@@ -769,17 +867,90 @@ function predictTrajectory(origin, angle, speed, dt, steps) {
   return points;
 }
 
+function spawnParticles(position, color, amount) {
+  for (let i = 0; i < amount; i += 1) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 50 + Math.random() * 180;
+    impactParticles.push({
+      position: position.add(Vector2D.fromAngle(angle, Math.random() * 8)),
+      velocity: Vector2D.fromAngle(angle, speed),
+      radius: 2 + Math.random() * 4,
+      life: 1,
+      color
+    });
+  }
+}
+
+function stepParticles(dt) {
+  for (const particle of impactParticles) {
+    particle.velocity = particle.velocity.add(new Vector2D(0, world.gravity * 0.28).scale(dt));
+    particle.position = particle.position.add(particle.velocity.scale(dt));
+    particle.life -= dt * 2.6;
+  }
+
+  for (let i = impactParticles.length - 1; i >= 0; i -= 1) {
+    if (impactParticles[i].life <= 0) {
+      impactParticles.splice(i, 1);
+    }
+  }
+}
+
+function renderParticles(ctx) {
+  ctx.save();
+  for (const particle of impactParticles) {
+    ctx.globalAlpha = Math.max(0, particle.life);
+    ctx.beginPath();
+    ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2);
+    ctx.fillStyle = particle.color;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function registerTargetHit(projectile, distanceToTarget) {
+  if (projectile.hasHitTarget) {
+    return;
+  }
+
+  projectile.hasHitTarget = true;
+  projectile.alive = false;
+  hitCount += 1;
+  streakCount += 1;
+
+  const hitWindow = projectile.radius + target.radius;
+  const quality = Math.max(0, 1 - distanceToTarget / hitWindow);
+  const earned = Math.round(12 + quality * 38 + streakCount * 4);
+  scoreCount += earned;
+  if (scoreCount > highScore) {
+    highScore = scoreCount;
+    saveHighScore(highScore);
+  }
+
+  spawnParticles(target.position, "#0f766e", 24);
+  setStatus(inputState.aiAim ? t("status_ai_hit") : `${t("status_hit")} +${earned}`, 1300);
+  respawnTarget();
+}
+
 function updateTurretAngle(event) {
   if (inputState.aiAim) {
     return;
   }
   const rect = canvas.getBoundingClientRect();
-  inputState.pointer = new Vector2D(event.clientX - rect.left, event.clientY - rect.top);
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  inputState.pointer = new Vector2D(
+    (event.clientX - rect.left) * scaleX,
+    (event.clientY - rect.top) * scaleY
+  );
   const delta = inputState.pointer.subtract(turret.basePosition);
   turret.angle = Math.atan2(delta.y, delta.x);
 }
 
 function tryFire() {
+  if (isPaused) {
+    return;
+  }
+
   if (turret.cooldown > 0) {
     return;
   }
@@ -793,7 +964,7 @@ function tryFire() {
     const muzzle = turret.basePosition.add(Vector2D.fromAngle(turret.angle, turret.barrelLength));
     const solution = aimWithLead(muzzle, target.position, target.velocity, world.muzzleSpeed, world.gravity);
     if (solution === null || solution.angle === null) {
-      statusLabelEl.textContent = t("status_ai_no_solution");
+      setStatus(t("status_ai_no_solution"), 900);
       return;
     }
 
@@ -803,11 +974,12 @@ function tryFire() {
   const projectile = world.spawnProjectile(turret);
   turret.cooldown = 0.11;
   shotsFired += 1;
+  spawnParticles(projectile.position, "#d97706", 8);
   if (inputState.queuedShots > 0) {
     inputState.queuedShots -= 1;
   }
   lastSpeedEl.textContent = `${projectile.velocity.magnitude().toFixed(0)} px/s`;
-  statusLabelEl.textContent = inputState.aiAim ? t("status_ai_firing") : t("status_firing");
+  setStatus(inputState.aiAim ? t("status_ai_firing") : t("status_firing"), 450);
 }
 
 function queueShot() {
@@ -820,8 +992,9 @@ frictionInput.addEventListener("input", syncControls);
 massInput.addEventListener("input", syncControls);
 speedInput.addEventListener("input", syncControls);
 
-canvas.addEventListener("mousemove", updateTurretAngle);
+canvas.addEventListener("pointermove", updateTurretAngle);
 canvas.addEventListener("pointerdown", (event) => {
+  canvas.setPointerCapture?.(event.pointerId);
   updateTurretAngle(event);
   inputState.firing = true;
   queueShot();
@@ -847,16 +1020,19 @@ window.addEventListener("keyup", (event) => {
     inputState.firing = inputState.aiAim ? true : inputState.autoFire;
   }
 });
+window.addEventListener("blur", () => {
+  inputState.firing = inputState.aiAim ? true : inputState.autoFire;
+});
 
 clearButton.addEventListener("click", () => {
   world.projectiles = [];
   lastSpeedEl.textContent = "0 px/s";
-  statusLabelEl.textContent = t("status_cleared");
+  setStatus(t("status_cleared"), 800);
 });
 
 trailButton.addEventListener("click", () => {
-  const enabled = renderer.toggleTrails();
-  trailButton.textContent = `Trails: ${enabled ? "On" : "Off"}`;
+  renderer.toggleTrails();
+  syncButtonLabels();
 });
 
 trajectoryButton.addEventListener("click", () => {
@@ -870,10 +1046,17 @@ autoFireButton.addEventListener("click", () => {
   syncButtonLabels();
   if (!inputState.aiAim) {
     updateModeLabel();
-    statusLabelEl.textContent = inputState.autoFire
+    setStatus(inputState.autoFire
       ? (language === "es" ? "Auto listo" : "Auto firing armed")
-      : t("status_manual_control");
+      : t("status_manual_control"), 900);
   }
+});
+
+pauseButton.addEventListener("click", () => {
+  isPaused = !isPaused;
+  inputState.firing = isPaused ? false : inputState.aiAim ? true : inputState.autoFire;
+  syncButtonLabels();
+  setStatus(isPaused ? t("status_paused") : t("status_ready"), 900);
 });
 
 function respawnTarget() {
@@ -911,13 +1094,71 @@ function stepTarget(dt) {
   }
 }
 
+function renderTarget(ctx, timestamp) {
+  const pulse = 1 + Math.sin(timestamp / 180) * 0.08;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(target.position.x, target.position.y, target.radius * 2.15 * pulse, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(15, 118, 110, 0.18)";
+  ctx.lineWidth = 8;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(target.position.x, target.position.y, target.radius * 1.45, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(217, 119, 6, 0.58)";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(target.position.x, target.position.y, target.radius, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(15, 118, 110, 0.94)";
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(23, 32, 31, 0.45)";
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(target.position.x, target.position.y, target.radius * 0.38, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+  ctx.fill();
+  ctx.restore();
+}
+
+function renderPauseOverlay(ctx) {
+  ctx.save();
+  ctx.fillStyle = "rgba(23, 32, 31, 0.32)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(251, 252, 249, 0.94)";
+  ctx.strokeStyle = "rgba(23, 32, 31, 0.18)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(canvas.width / 2 - 120, canvas.height / 2 - 42, 240, 84, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#17201f";
+  ctx.font = "700 24px Trebuchet MS, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(t("status_paused"), canvas.width / 2, canvas.height / 2);
+  ctx.restore();
+}
+
 aiAimButton.addEventListener("click", () => {
   inputState.aiAim = !inputState.aiAim;
   syncButtonLabels();
   updateModeLabel();
-  statusLabelEl.textContent = inputState.aiAim ? t("status_ai_armed") : t("status_manual_control");
+  setStatus(inputState.aiAim ? t("status_ai_armed") : t("status_manual_control"), 900);
   inputState.firing = inputState.aiAim ? true : inputState.autoFire;
   inputState.queuedShots = 0;
+});
+
+shuffleArenaButton.addEventListener("click", () => {
+  world.shuffleArena();
+  world.projectiles = [];
+  impactParticles.length = 0;
+  respawnTarget();
+  setStatus(t("status_arena_ready"), 1000);
 });
 
 languageButton.addEventListener("click", () => {
@@ -929,11 +1170,13 @@ resetButton.addEventListener("click", () => {
   world.reset();
   inputState.firing = inputState.aiAim ? true : inputState.autoFire;
   inputState.queuedShots = 0;
+  impactParticles.length = 0;
   lastSpeedEl.textContent = "0 px/s";
-  statusLabelEl.textContent = t("status_scene_reset");
+  setStatus(t("status_scene_reset"), 1000);
   hitCount = 0;
   scoreCount = 0;
   shotsFired = 0;
+  streakCount = 0;
   respawnTarget();
 });
 
@@ -950,39 +1193,41 @@ const fixedDt = 1 / 120;
 function frame(timestamp) {
   const deltaSeconds = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
   lastTimestamp = timestamp;
-  accumulator += deltaSeconds;
 
-  turret.cooldown = Math.max(0, turret.cooldown - deltaSeconds);
+  if (!isPaused) {
+    accumulator += deltaSeconds;
+    turret.cooldown = Math.max(0, turret.cooldown - deltaSeconds);
 
-  if (inputState.aiAim) {
-    const muzzle = turret.basePosition.add(Vector2D.fromAngle(turret.angle, turret.barrelLength));
-    const solution = aimWithLead(muzzle, target.position, target.velocity, world.muzzleSpeed, world.gravity);
-    if (solution !== null && solution.angle !== null) {
-      turret.angle = solution.angle;
-    }
-  }
-
-  while (accumulator >= fixedDt) {
-    tryFire();
-    world.step(fixedDt);
-    stepTarget(fixedDt);
-
-    for (const projectile of world.projectiles) {
-      if (!projectile.alive) {
-        continue;
-      }
-
-      const delta = projectile.position.subtract(target.position);
-      const minDistance = projectile.radius + target.radius;
-      if (delta.magnitude() <= minDistance) {
-        projectile.alive = false;
-        hitCount += 1;
-        scoreCount += 10;
-        statusLabelEl.textContent = inputState.aiAim ? t("status_ai_hit") : t("status_hit");
-        respawnTarget();
+    if (inputState.aiAim) {
+      const muzzle = turret.basePosition.add(Vector2D.fromAngle(turret.angle, turret.barrelLength));
+      const solution = aimWithLead(muzzle, target.position, target.velocity, world.muzzleSpeed, world.gravity);
+      if (solution !== null && solution.angle !== null) {
+        turret.angle = solution.angle;
       }
     }
-    accumulator -= fixedDt;
+
+    while (accumulator >= fixedDt) {
+      tryFire();
+      world.step(fixedDt);
+      stepTarget(fixedDt);
+      stepParticles(fixedDt);
+
+      for (const projectile of world.projectiles) {
+        if (!projectile.alive) {
+          continue;
+        }
+
+        const delta = projectile.position.subtract(target.position);
+        const distanceToTarget = delta.magnitude();
+        const minDistance = projectile.radius + target.radius;
+        if (distanceToTarget <= minDistance) {
+          registerTargetHit(projectile, distanceToTarget);
+        }
+      }
+      accumulator -= fixedDt;
+    }
+  } else {
+    accumulator = 0;
   }
 
   projectileCountEl.textContent = String(world.projectiles.length);
@@ -990,9 +1235,12 @@ function frame(timestamp) {
   collisionCountEl.textContent = String(world.collisionCount);
   hitCountEl.textContent = String(hitCount);
   scoreCountEl.textContent = String(scoreCount);
+  highScoreEl.textContent = String(highScore);
+  streakCountEl.textContent = String(streakCount);
+  shotCountEl.textContent = String(shotsFired);
   const accuracy = shotsFired > 0 ? (hitCount / shotsFired) * 100 : 0;
   accuracyEl.textContent = `${accuracy.toFixed(0)}%`;
-  if (world.projectiles.length === 0 && !inputState.firing && inputState.queuedShots === 0) {
+  if (!isPaused && timestamp > statusHoldUntil && world.projectiles.length === 0 && !inputState.firing && inputState.queuedShots === 0) {
     statusLabelEl.textContent = t("status_ready");
   }
   renderer.render();
@@ -1017,15 +1265,11 @@ function frame(timestamp) {
     ctx.restore();
   }
 
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(target.position.x, target.position.y, target.radius, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(14, 116, 144, 0.92)";
-  ctx.fill();
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(15, 23, 42, 0.35)";
-  ctx.stroke();
-  ctx.restore();
+  renderTarget(ctx, timestamp);
+  renderParticles(ctx);
+  if (isPaused) {
+    renderPauseOverlay(ctx);
+  }
   requestAnimationFrame(frame);
 }
 

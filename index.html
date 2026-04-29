@@ -7,68 +7,47 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="layout">
-      <section class="panel hero">
-        <div class="hero-copy">
+    <main class="app-shell">
+      <section class="command-bar" aria-label="NeuroBallistics command center">
+        <div class="brand-block">
           <p class="eyebrow" data-i18n="hero_eyebrow">Deterministic Physics Laboratory</p>
           <h1>NeuroBallistics</h1>
           <p class="lede" data-i18n="hero_lede">
-            Aim the turret with the mouse. Hold the left mouse button or press
-            <kbd>Space</kbd> to fire. Tune gravity, friction, ball mass, and muzzle
-            speed in real time.
+            Aim the turret, tune the physics, and use manual or AI-assisted fire to hit
+            a moving target.
           </p>
-          <div class="hero-actions">
-            <a class="cta primary" href="#lab" data-i18n="hero_launch">Launch Experiment</a>
-            <button class="cta secondary" id="reset-sim" type="button" data-i18n="hero_reset">Reset Scene</button>
-            <button class="cta secondary" id="toggle-language" type="button" aria-label="Toggle language">ES</button>
-          </div>
         </div>
+
         <div class="hud">
-          <div><span data-i18n="hud_projectiles">Projectiles</span><strong id="projectile-count">0</strong></div>
-          <div><span data-i18n="hud_last_speed">Last Speed</span><strong id="last-speed">0</strong></div>
-          <div><span data-i18n="hud_sim_time">Sim Time</span><strong id="sim-time">0.00s</strong></div>
-          <div><span data-i18n="hud_collisions">Collisions</span><strong id="collision-count">0</strong></div>
-          <div><span data-i18n="hud_hits">Hits</span><strong id="hit-count">0</strong></div>
           <div><span data-i18n="hud_score">Score</span><strong id="score-count">0</strong></div>
+          <div><span data-i18n="hud_high_score">Best</span><strong id="high-score">0</strong></div>
+          <div><span data-i18n="hud_streak">Streak</span><strong id="streak-count">0</strong></div>
+          <div><span data-i18n="hud_hits">Hits</span><strong id="hit-count">0</strong></div>
+          <div><span data-i18n="hud_shots">Shots</span><strong id="shot-count">0</strong></div>
           <div><span data-i18n="hud_accuracy">Accuracy</span><strong id="accuracy">0%</strong></div>
-          <div><span data-i18n="hud_mode">Mode</span><strong id="mode-label">Manual</strong></div>
+          <div><span data-i18n="hud_projectiles">Balls</span><strong id="projectile-count">0</strong></div>
+          <div><span data-i18n="hud_collisions">Collisions</span><strong id="collision-count">0</strong></div>
           <div><span data-i18n="hud_status">Status</span><strong id="status-label">Ready</strong></div>
         </div>
+
+        <div class="top-actions">
+          <button class="cta secondary" id="reset-sim" type="button" data-i18n="hero_reset">Reset</button>
+          <button class="cta secondary" id="toggle-pause" type="button" data-i18n="btn_pause">Pause</button>
+          <button class="cta secondary" id="toggle-language" type="button" aria-label="Toggle language">ES</button>
+        </div>
       </section>
 
-      <section class="panel story">
-        <article>
-          <h2 data-i18n="story_1_title">What This Demonstrates</h2>
-          <p data-i18n="story_1_body">
-            This prototype explores a deterministic 2D ballistic sandbox built with the
-            native Canvas API. The simulation runs on a fixed timestep, exposes live
-            parameters, and keeps physics logic separate from presentation.
-          </p>
-        </article>
-        <article>
-          <h2 data-i18n="story_2_title">Why It Matters</h2>
-          <p data-i18n="story_2_body">
-            The goal is not just a toy cannon. It is a compact systems project that shows
-            simulation thinking, UI feedback loops, collision handling, and a foundation
-            for future AI-driven aiming or reinforcement-learning experiments.
-          </p>
-        </article>
-        <article>
-          <h2 data-i18n="story_3_title">How To Use It</h2>
-          <p data-i18n="story_3_body">
-            Move the mouse to rotate the turret, click to fire, hold click or press
-            <kbd>Space</kbd> for repeated fire, and tweak the sliders to observe how mass,
-            gravity, friction, and launch speed reshape the trajectories.
-          </p>
-        </article>
-      </section>
-
-      <section class="panel lab" id="lab">
+      <section class="lab" id="lab">
         <div class="canvas-wrap">
           <canvas id="lab-canvas" width="1100" height="620"></canvas>
         </div>
 
         <aside class="controls" aria-label="Simulation controls">
+          <div class="mode-strip">
+            <span data-i18n="hud_mode">Mode</span>
+            <strong id="mode-label">Manual</strong>
+          </div>
+
           <label>
             <span data-i18n="control_gravity">Gravity</span>
             <input id="gravity" type="range" min="50" max="300" step="1" value="160" />
@@ -93,8 +72,16 @@
             <output id="speed-value">520</output>
           </label>
 
+          <div class="telemetry-card">
+            <span data-i18n="hud_last_speed">Last Speed</span>
+            <strong id="last-speed">0 px/s</strong>
+            <span data-i18n="hud_sim_time">Sim Time</span>
+            <strong id="sim-time">0.00s</strong>
+          </div>
+
           <div class="buttons">
             <button id="clear-projectiles" type="button" data-i18n="btn_clear">Clear Balls</button>
+            <button id="shuffle-arena" type="button" data-i18n="btn_shuffle">New Arena</button>
             <button id="toggle-trails" type="button">Trails: On</button>
             <button id="toggle-trajectory" type="button">Trajectory: On</button>
             <button id="toggle-autofire" type="button">Auto Fire: Off</button>
@@ -103,14 +90,31 @@
         </aside>
       </section>
 
-      <section class="panel footer-card">
-        <p data-i18n="footer_body">
-          Built as a static browser project with HTML, CSS and Canvas-rendered JavaScript.
-          No external physics engine, no backend, no framework dependency.
-        </p>
+      <section class="portfolio-notes">
+        <article>
+          <h2 data-i18n="story_1_title">System Feel</h2>
+          <p data-i18n="story_1_body">
+            Fixed-timestep simulation, custom vector math, impulse-style collision
+            response, and Canvas rendering keep the prototype inspectable and fast.
+          </p>
+        </article>
+        <article>
+          <h2 data-i18n="story_2_title">Interaction Loop</h2>
+          <p data-i18n="story_2_body">
+            Manual aiming, repeated fire, live tuning, trajectory prediction, hit scoring,
+            and AI aiming make the sandbox feel like a small playable lab.
+          </p>
+        </article>
+        <article>
+          <h2 data-i18n="story_3_title">Portfolio Angle</h2>
+          <p data-i18n="story_3_body">
+            The project is intentionally static and dependency-light, so a recruiter can
+            open it quickly and inspect the core engineering decisions.
+          </p>
+        </article>
       </section>
     </main>
 
     <script src="./app.js"></script>
   </body>
-  </html>
+</html>
