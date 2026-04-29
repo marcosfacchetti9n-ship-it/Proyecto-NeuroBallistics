@@ -18,7 +18,8 @@ Incluye:
 - Colisiones entre proyectiles.
 - Colisiones con paredes, suelo, techo y obstáculos circulares.
 - Partículas de impacto y feedback visual en disparos/aciertos.
-- Sliders en vivo para gravedad, fricción, masa y velocidad inicial.
+- Sliders en vivo para gravedad, fricción, masa, velocidad inicial y cadencia de disparo.
+- Sonidos sintetizados con Web Audio para disparos, impactos y colisiones.
 - Pausa, reset, limpieza de bolas y generación de nueva arena.
 
 ## Por qué lo hice

@@ -74,6 +74,7 @@ class PhysicsWorld {
     this.restitution = 0.74;
     this.projectileMass = 1.5;
     this.muzzleSpeed = 520;
+    this.fireRate = 8;
     this.airDrag = 0.0008;
     this.maxProjectiles = 90;
     this.projectiles = [];
@@ -472,6 +473,112 @@ class Renderer {
   }
 }
 
+class SoundEngine {
+  constructor() {
+    this.enabled = true;
+    this.context = null;
+    this.masterGain = null;
+    this.lastCollisionAt = 0;
+  }
+
+  setEnabled(enabled) {
+    this.enabled = enabled;
+    if (enabled) {
+      this.ensureContext();
+    }
+  }
+
+  ensureContext() {
+    if (!this.enabled) {
+      return null;
+    }
+
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) {
+      return null;
+    }
+
+    if (this.context === null) {
+      this.context = new AudioCtor();
+      this.masterGain = this.context.createGain();
+      this.masterGain.gain.value = 0.22;
+      this.masterGain.connect(this.context.destination);
+    }
+
+    if (this.context.state === "suspended") {
+      this.context.resume();
+    }
+
+    return this.context;
+  }
+
+  playShot() {
+    const ctx = this.ensureContext();
+    if (ctx === null || this.masterGain === null) {
+      return;
+    }
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(190, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 0.11);
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.42, ctx.currentTime + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.13);
+  }
+
+  playHit() {
+    const ctx = this.ensureContext();
+    if (ctx === null || this.masterGain === null) {
+      return;
+    }
+
+    for (const [offset, frequency] of [[0, 420], [0.045, 640], [0.09, 840]]) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.001, ctx.currentTime + offset);
+      gain.gain.exponentialRampToValueAtTime(0.28, ctx.currentTime + offset + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.11);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(ctx.currentTime + offset);
+      osc.stop(ctx.currentTime + offset + 0.13);
+    }
+  }
+
+  playCollision() {
+    const ctx = this.ensureContext();
+    if (ctx === null || this.masterGain === null) {
+      return;
+    }
+
+    if (ctx.currentTime - this.lastCollisionAt < 0.055) {
+      return;
+    }
+    this.lastCollisionAt = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(120, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(48, ctx.currentTime + 0.055);
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.14, ctx.currentTime + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.065);
+  }
+}
+
 const canvas = document.getElementById("lab-canvas");
 const projectileCountEl = document.getElementById("projectile-count");
 const lastSpeedEl = document.getElementById("last-speed");
@@ -494,11 +601,14 @@ const massInput = document.getElementById("mass");
 const massValue = document.getElementById("mass-value");
 const speedInput = document.getElementById("speed");
 const speedValue = document.getElementById("speed-value");
+const fireRateInput = document.getElementById("fire-rate");
+const fireRateValue = document.getElementById("fire-rate-value");
 const clearButton = document.getElementById("clear-projectiles");
 const trailButton = document.getElementById("toggle-trails");
 const trajectoryButton = document.getElementById("toggle-trajectory");
 const autoFireButton = document.getElementById("toggle-autofire");
 const aiAimButton = document.getElementById("toggle-ai");
+const soundButton = document.getElementById("toggle-sound");
 const resetButton = document.getElementById("reset-sim");
 const pauseButton = document.getElementById("toggle-pause");
 const shuffleArenaButton = document.getElementById("shuffle-arena");
@@ -529,11 +639,12 @@ const translations = {
     story_3_title: "How To Use It",
     story_3_body:
       "Move the mouse to rotate the turret, click to fire, hold click or press <kbd>Space</kbd> for repeated fire, and tweak the sliders to observe how mass, gravity, friction, and launch speed reshape the trajectories.",
-    control_gravity: "Gravity",
-    control_friction: "Ground Friction",
-    control_mass: "Ball Mass",
-    control_speed: "Muzzle Speed",
-    btn_clear: "Clear Balls",
+  control_gravity: "Gravity",
+  control_friction: "Ground Friction",
+  control_mass: "Ball Mass",
+  control_speed: "Muzzle Speed",
+  control_fire_rate: "Fire Rate",
+  btn_clear: "Clear Balls",
     footer_body:
       "Built as a static browser project with HTML, CSS and Canvas-rendered JavaScript. No external physics engine, no backend, no framework dependency.",
     mode_manual: "Manual",
@@ -641,6 +752,7 @@ Object.assign(translations.es, {
   story_3_body:
     "El proyecto es estatico y liviano, pensado para que un recruiter pueda abrirlo rapido e inspeccionar las decisiones de ingenieria.",
   control_friction: "Friccion (suelo)",
+  control_fire_rate: "Cadencia",
   btn_shuffle: "Nueva arena",
   btn_pause: "Pausar",
   btn_resume: "Continuar",
@@ -682,17 +794,20 @@ function syncButtonLabels() {
   const trajectoryLabel = language === "es" ? "Trayectoria" : "Trajectory";
   const autoFireLabel = language === "es" ? "Auto Disparo" : "Auto Fire";
   const aiAimLabel = language === "es" ? "Apuntado IA" : "AI Aim";
+  const soundLabel = language === "es" ? "Sonido" : "Sound";
 
   trailButton.textContent = `${trailsLabel}: ${renderer.showTrails ? on : off}`;
   trajectoryButton.textContent = `${trajectoryLabel}: ${inputState.showTrajectory ? on : off}`;
   autoFireButton.textContent = `${autoFireLabel}: ${inputState.autoFire ? on : off}`;
   aiAimButton.textContent = `${aiAimLabel}: ${inputState.aiAim ? on : off}`;
+  soundButton.textContent = `${soundLabel}: ${soundEngine.enabled ? on : off}`;
   pauseButton.textContent = isPaused ? t("btn_resume") : t("btn_pause");
 }
 
 const world = new PhysicsWorld(canvas.width, canvas.height);
 const turret = new Turret(120, canvas.height - 54);
 const renderer = new Renderer(canvas, world, turret);
+const soundEngine = new SoundEngine();
 
 const target = {
   position: new Vector2D(canvas.width * 0.78, canvas.height * 0.35),
@@ -745,11 +860,13 @@ function syncControls() {
   world.groundFriction = Number(frictionInput.value);
   world.projectileMass = Number(massInput.value);
   world.muzzleSpeed = Number(speedInput.value);
+  world.fireRate = Number(fireRateInput.value);
 
   gravityValue.value = gravityInput.value;
   frictionValue.value = frictionInput.value;
   massValue.value = massInput.value;
   speedValue.value = speedInput.value;
+  fireRateValue.value = `${Number(fireRateInput.value).toFixed(1).replace(".0", "")}/s`;
 }
 
 function normalizeAngle(angle) {
@@ -927,6 +1044,7 @@ function registerTargetHit(projectile, distanceToTarget) {
   }
 
   spawnParticles(target.position, "#0f766e", 24);
+  soundEngine.playHit();
   setStatus(inputState.aiAim ? t("status_ai_hit") : `${t("status_hit")} +${earned}`, 1300);
   respawnTarget();
 }
@@ -972,9 +1090,10 @@ function tryFire() {
   }
 
   const projectile = world.spawnProjectile(turret);
-  turret.cooldown = 0.11;
+  turret.cooldown = 1 / Math.max(1, world.fireRate);
   shotsFired += 1;
   spawnParticles(projectile.position, "#d97706", 8);
+  soundEngine.playShot();
   if (inputState.queuedShots > 0) {
     inputState.queuedShots -= 1;
   }
@@ -991,6 +1110,7 @@ gravityInput.addEventListener("input", syncControls);
 frictionInput.addEventListener("input", syncControls);
 massInput.addEventListener("input", syncControls);
 speedInput.addEventListener("input", syncControls);
+fireRateInput.addEventListener("input", syncControls);
 
 canvas.addEventListener("pointermove", updateTurretAngle);
 canvas.addEventListener("pointerdown", (event) => {
@@ -1038,6 +1158,14 @@ trailButton.addEventListener("click", () => {
 trajectoryButton.addEventListener("click", () => {
   inputState.showTrajectory = !inputState.showTrajectory;
   syncButtonLabels();
+});
+
+soundButton.addEventListener("click", () => {
+  soundEngine.setEnabled(!soundEngine.enabled);
+  syncButtonLabels();
+  if (soundEngine.enabled) {
+    soundEngine.playHit();
+  }
 });
 
 autoFireButton.addEventListener("click", () => {
@@ -1208,7 +1336,11 @@ function frame(timestamp) {
 
     while (accumulator >= fixedDt) {
       tryFire();
+      const collisionCountBeforeStep = world.collisionCount;
       world.step(fixedDt);
+      if (world.collisionCount > collisionCountBeforeStep) {
+        soundEngine.playCollision();
+      }
       stepTarget(fixedDt);
       stepParticles(fixedDt);
 
