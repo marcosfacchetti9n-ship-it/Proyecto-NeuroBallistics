@@ -4,6 +4,8 @@ Construí **NeuroBallistics** como un laboratorio de física 2D en el navegador 
 
 La demo es 100% estática: **HTML, CSS y JavaScript con Canvas nativo**. No usa framework, backend ni motor de física externo.
 
+Demo: https://neuroballistics.netlify.app/
+
 ## Qué se puede probar
 
 En la primera pantalla se puede controlar una torreta, disparar proyectiles balísticos y ajustar parámetros físicos en tiempo real. También agregué un modo de apuntado asistido por IA que calcula un ángulo de disparo con anticipación sobre un objetivo en movimiento.
