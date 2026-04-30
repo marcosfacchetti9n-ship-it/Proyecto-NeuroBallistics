@@ -1,8 +1,10 @@
 # NeuroBallistics
 
-Construí **NeuroBallistics** como un laboratorio de fisica 2D en el navegador para mostrar como pienso cuando trabajo en sistemas interactivos: simulacion determinista, feedback visual inmediato, arquitectura clara y una experiencia que se puede probar sin instalar nada.
+Construi **NeuroBallistics** como un laboratorio de fisica 2D en el navegador para mostrar como pienso cuando trabajo en sistemas interactivos: simulacion determinista, feedback visual inmediato, arquitectura clara y una experiencia que se puede probar sin instalar nada.
 
 La demo es 100% estatica: **HTML, CSS y JavaScript con Canvas nativo**. No usa framework, backend ni motor de fisica externo.
+
+Demo: https://neuroballistics.netlify.app/
 
 ## Que se puede probar
 
