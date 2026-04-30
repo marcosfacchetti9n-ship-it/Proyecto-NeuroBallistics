@@ -654,6 +654,7 @@ const highScoreEl = document.getElementById("high-score");
 const streakCountEl = document.getElementById("streak-count");
 const shotCountEl = document.getElementById("shot-count");
 const accuracyEl = document.getElementById("accuracy");
+const challengeTimeEl = document.getElementById("challenge-time");
 const modeLabelEl = document.getElementById("mode-label");
 const statusLabelEl = document.getElementById("status-label");
 
@@ -673,10 +674,20 @@ const trajectoryButton = document.getElementById("toggle-trajectory");
 const autoFireButton = document.getElementById("toggle-autofire");
 const aiAimButton = document.getElementById("toggle-ai");
 const soundButton = document.getElementById("toggle-sound");
+const challengeButton = document.getElementById("toggle-challenge");
 const resetButton = document.getElementById("reset-sim");
 const pauseButton = document.getElementById("toggle-pause");
 const shuffleArenaButton = document.getElementById("shuffle-arena");
 const languageButton = document.getElementById("toggle-language");
+const resultOverlay = document.getElementById("result-overlay");
+const resultTitle = document.getElementById("result-title");
+const resultCopy = document.getElementById("result-copy");
+const resultScore = document.getElementById("result-score");
+const resultHits = document.getElementById("result-hits");
+const resultAccuracy = document.getElementById("result-accuracy");
+const resultBest = document.getElementById("result-best");
+const resultRetryButton = document.getElementById("result-retry");
+const resultCloseButton = document.getElementById("result-close");
 
 const translations = {
   en: {
@@ -716,8 +727,10 @@ const translations = {
     mode_ai: "AI",
     status_ready: "Ready",
     status_cleared: "Cleared",
-    status_scene_reset: "Scene reset",
-    status_firing: "Firing",
+  status_scene_reset: "Scene reset",
+  status_challenge_started: "Challenge started",
+  status_challenge_complete: "Challenge complete",
+  status_firing: "Firing",
     status_ai_firing: "AI firing",
     status_ai_hit: "AI hit!",
     status_hit: "Hit!",
@@ -761,8 +774,10 @@ const translations = {
     mode_ai: "IA",
     status_ready: "Listo",
     status_cleared: "Limpio",
-    status_scene_reset: "Escena reiniciada",
-    status_firing: "Disparando",
+  status_scene_reset: "Escena reiniciada",
+  status_challenge_started: "Desafio iniciado",
+  status_challenge_complete: "Desafio completo",
+  status_firing: "Disparando",
     status_ai_firing: "IA disparando",
     status_ai_hit: "¡IA acertó!",
     status_hit: "¡Acierto!",
@@ -779,6 +794,7 @@ Object.assign(translations.en, {
   control_deck: "Control Deck",
   group_physics: "Physics",
   group_systems: "Systems",
+  hud_challenge: "Challenge",
   hud_projectiles: "Balls",
   hud_high_score: "Best",
   hud_streak: "Streak",
@@ -795,6 +811,15 @@ Object.assign(translations.en, {
   btn_shuffle: "New Arena",
   btn_pause: "Pause",
   btn_resume: "Resume",
+  btn_challenge_start: "Start Challenge",
+  btn_challenge_stop: "End Challenge",
+  challenge_ready: "Ready",
+  challenge_time: "Time",
+  result_kicker: "Challenge Complete",
+  result_title: "Run Summary",
+  result_copy: "A compact readout of the last challenge run.",
+  result_retry: "Retry Challenge",
+  result_close: "Back to Lab",
   status_paused: "Paused",
   status_arena_ready: "Arena rebuilt"
 });
@@ -807,6 +832,7 @@ Object.assign(translations.es, {
   control_deck: "Panel de Control",
   group_physics: "Fisica",
   group_systems: "Sistemas",
+  hud_challenge: "Desafio",
   hud_projectiles: "Bolas",
   hud_high_score: "Mejor",
   hud_streak: "Racha",
@@ -826,6 +852,15 @@ Object.assign(translations.es, {
   btn_shuffle: "Nueva arena",
   btn_pause: "Pausar",
   btn_resume: "Continuar",
+  btn_challenge_start: "Iniciar desafio",
+  btn_challenge_stop: "Terminar desafio",
+  challenge_ready: "Listo",
+  challenge_time: "Tiempo",
+  result_kicker: "Desafio completo",
+  result_title: "Resumen de run",
+  result_copy: "Lectura compacta de la ultima partida de desafio.",
+  result_retry: "Reintentar desafio",
+  result_close: "Volver al laboratorio",
   status_paused: "Pausado",
   status_arena_ready: "Arena reconstruida",
   status_ai_hit: "IA acerto!",
@@ -867,6 +902,7 @@ function syncBodyState() {
   document.body.classList.toggle("mode-auto", !inputState.aiAim && inputState.autoFire);
   document.body.classList.toggle("mode-manual", !inputState.aiAim && !inputState.autoFire);
   document.body.classList.toggle("is-paused", isPaused);
+  document.body.classList.toggle("challenge-active", challengeState.active);
   document.body.classList.toggle("sound-off", !soundEngine.enabled);
 }
 
@@ -884,12 +920,14 @@ function syncButtonLabels() {
   autoFireButton.textContent = `${autoFireLabel}: ${inputState.autoFire ? on : off}`;
   aiAimButton.textContent = `${aiAimLabel}: ${inputState.aiAim ? on : off}`;
   soundButton.textContent = `${soundLabel}: ${soundEngine.enabled ? on : off}`;
+  challengeButton.textContent = challengeState.active ? t("btn_challenge_stop") : t("btn_challenge_start");
   pauseButton.textContent = isPaused ? t("btn_resume") : t("btn_pause");
   setPressed(trailButton, renderer.showTrails);
   setPressed(trajectoryButton, inputState.showTrajectory);
   setPressed(autoFireButton, inputState.autoFire);
   setPressed(aiAimButton, inputState.aiAim);
   setPressed(soundButton, soundEngine.enabled);
+  setPressed(challengeButton, challengeState.active);
   setPressed(pauseButton, isPaused);
   syncBodyState();
 }
@@ -913,6 +951,13 @@ let highScore = readHighScore();
 let isPaused = false;
 let statusHoldUntil = 0;
 const impactParticles = [];
+const challengeState = {
+  active: false,
+  duration: 60,
+  remaining: 60,
+  best: readStoredNumber("neuroballistics:challenge-best"),
+  lastScore: 0
+};
 
 const inputState = {
   pointer: new Vector2D(canvas.width * 0.5, canvas.height * 0.3),
@@ -923,18 +968,26 @@ const inputState = {
   showTrajectory: true
 };
 
-function readHighScore() {
+function readStoredNumber(key) {
   try {
-    const value = Number(window.localStorage.getItem("neuroballistics:high-score"));
+    const value = Number(window.localStorage.getItem(key));
     return Number.isFinite(value) ? value : 0;
   } catch (_error) {
     return 0;
   }
 }
 
+function readHighScore() {
+  return readStoredNumber("neuroballistics:high-score");
+}
+
 function saveHighScore(value) {
+  saveStoredNumber("neuroballistics:high-score", value);
+}
+
+function saveStoredNumber(key, value) {
   try {
-    window.localStorage.setItem("neuroballistics:high-score", String(value));
+    window.localStorage.setItem(key, String(value));
   } catch (_error) {
     // Local files can run in storage-restricted browser contexts.
   }
@@ -943,6 +996,67 @@ function saveHighScore(value) {
 function setStatus(message, holdMs = 900) {
   statusLabelEl.textContent = message;
   statusHoldUntil = performance.now() + holdMs;
+}
+
+function resetRunStats() {
+  world.reset();
+  world.shuffleArena();
+  impactParticles.length = 0;
+  hitCount = 0;
+  scoreCount = 0;
+  shotsFired = 0;
+  streakCount = 0;
+  lastSpeedEl.textContent = "0 px/s";
+  respawnTarget();
+}
+
+function startChallenge() {
+  resetRunStats();
+  challengeState.active = true;
+  challengeState.remaining = challengeState.duration;
+  resultOverlay.hidden = true;
+  isPaused = false;
+  inputState.aiAim = false;
+  inputState.autoFire = false;
+  inputState.firing = false;
+  inputState.queuedShots = 0;
+  updateModeLabel();
+  syncButtonLabels();
+  setStatus(t("status_challenge_started"), 1200);
+}
+
+function finishChallenge() {
+  if (!challengeState.active) {
+    return;
+  }
+
+  challengeState.active = false;
+  challengeState.remaining = 0;
+  challengeState.lastScore = scoreCount;
+  if (scoreCount > challengeState.best) {
+    challengeState.best = scoreCount;
+    saveStoredNumber("neuroballistics:challenge-best", challengeState.best);
+  }
+
+  isPaused = true;
+  inputState.firing = false;
+  inputState.queuedShots = 0;
+  resultTitle.textContent = t("result_title");
+  resultCopy.textContent = t("result_copy");
+  resultScore.textContent = String(scoreCount);
+  resultHits.textContent = String(hitCount);
+  resultAccuracy.textContent = `${(shotsFired > 0 ? (hitCount / shotsFired) * 100 : 0).toFixed(0)}%`;
+  resultBest.textContent = String(challengeState.best);
+  resultOverlay.hidden = false;
+  syncButtonLabels();
+  setStatus(t("status_challenge_complete"), 1400);
+}
+
+function closeResults() {
+  resultOverlay.hidden = true;
+  isPaused = false;
+  syncButtonLabels();
+  setStatus(t("status_ready"), 700);
 }
 
 function syncControls() {
@@ -1258,6 +1372,15 @@ soundButton.addEventListener("click", () => {
   }
 });
 
+challengeButton.addEventListener("click", () => {
+  if (challengeState.active) {
+    finishChallenge();
+    return;
+  }
+
+  startChallenge();
+});
+
 autoFireButton.addEventListener("click", () => {
   inputState.autoFire = !inputState.autoFire;
   inputState.firing = inputState.aiAim ? true : inputState.autoFire;
@@ -1385,18 +1508,19 @@ languageButton.addEventListener("click", () => {
 });
 
 resetButton.addEventListener("click", () => {
-  world.reset();
+  challengeState.active = false;
+  challengeState.remaining = challengeState.duration;
+  resultOverlay.hidden = true;
+  resetRunStats();
   inputState.firing = inputState.aiAim ? true : inputState.autoFire;
   inputState.queuedShots = 0;
-  impactParticles.length = 0;
-  lastSpeedEl.textContent = "0 px/s";
   setStatus(t("status_scene_reset"), 1000);
-  hitCount = 0;
-  scoreCount = 0;
-  shotsFired = 0;
-  streakCount = 0;
-  respawnTarget();
+  syncButtonLabels();
 });
+
+resultRetryButton.addEventListener("click", startChallenge);
+
+resultCloseButton.addEventListener("click", closeResults);
 
 syncControls();
 respawnTarget();
@@ -1434,6 +1558,15 @@ function frame(timestamp) {
       stepTarget(fixedDt);
       stepParticles(fixedDt);
 
+      if (challengeState.active) {
+        challengeState.remaining = Math.max(0, challengeState.remaining - fixedDt);
+        if (challengeState.remaining <= 0) {
+          finishChallenge();
+          accumulator = 0;
+          break;
+        }
+      }
+
       for (const projectile of world.projectiles) {
         if (!projectile.alive) {
           continue;
@@ -1460,6 +1593,11 @@ function frame(timestamp) {
   highScoreEl.textContent = String(highScore);
   streakCountEl.textContent = String(streakCount);
   shotCountEl.textContent = String(shotsFired);
+  challengeTimeEl.textContent = challengeState.active
+    ? `${Math.ceil(challengeState.remaining)}s`
+    : challengeState.best > 0
+      ? `${t("hud_high_score")} ${challengeState.best}`
+      : t("challenge_ready");
   const accuracy = shotsFired > 0 ? (hitCount / shotsFired) * 100 : 0;
   accuracyEl.textContent = `${accuracy.toFixed(0)}%`;
   if (!isPaused && timestamp > statusHoldUntil && world.projectiles.length === 0 && !inputState.firing && inputState.queuedShots === 0) {

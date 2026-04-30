@@ -27,10 +27,12 @@
           <div><span data-i18n="hud_accuracy">Accuracy</span><strong id="accuracy">0%</strong></div>
           <div><span data-i18n="hud_projectiles">Balls</span><strong id="projectile-count">0</strong></div>
           <div><span data-i18n="hud_collisions">Collisions</span><strong id="collision-count">0</strong></div>
+          <div><span data-i18n="hud_challenge">Challenge</span><strong id="challenge-time">Ready</strong></div>
           <div class="hud-status"><span data-i18n="hud_status">Status</span><strong id="status-label">Ready</strong></div>
         </div>
 
         <div class="top-actions" aria-label="Global controls">
+          <button class="cta secondary" id="toggle-challenge" type="button" aria-pressed="false">Challenge</button>
           <button class="cta secondary" id="reset-sim" type="button" data-i18n="hero_reset">Reset</button>
           <button class="cta secondary" id="toggle-pause" type="button" data-i18n="btn_pause" aria-pressed="false">Pause</button>
           <button class="cta secondary language-button" id="toggle-language" type="button" aria-label="Toggle language">ES</button>
@@ -134,6 +136,26 @@
         </article>
       </section>
     </main>
+
+    <section class="result-overlay" id="result-overlay" hidden aria-live="polite">
+      <div class="result-panel" role="dialog" aria-modal="true" aria-labelledby="result-title">
+        <span class="result-kicker" data-i18n="result_kicker">Challenge Complete</span>
+        <h2 id="result-title">Run Summary</h2>
+        <p id="result-copy" data-i18n="result_copy">
+          A compact readout of the last challenge run.
+        </p>
+        <div class="result-grid">
+          <div><span data-i18n="hud_score">Score</span><strong id="result-score">0</strong></div>
+          <div><span data-i18n="hud_hits">Hits</span><strong id="result-hits">0</strong></div>
+          <div><span data-i18n="hud_accuracy">Accuracy</span><strong id="result-accuracy">0%</strong></div>
+          <div><span data-i18n="hud_high_score">Best</span><strong id="result-best">0</strong></div>
+        </div>
+        <div class="result-actions">
+          <button id="result-retry" type="button" data-i18n="result_retry">Retry Challenge</button>
+          <button id="result-close" type="button" data-i18n="result_close">Back to Lab</button>
+        </div>
+      </div>
+    </section>
 
     <script src="./app.js"></script>
   </body>

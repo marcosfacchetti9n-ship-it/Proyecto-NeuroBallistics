@@ -16,6 +16,7 @@ Incluye:
 - Disparo con click, mantener click o `Space`.
 - Modo `AI Aim` para apuntado balistico asistido.
 - Objetivo movil con score, hits, accuracy, streak y high score persistente.
+- Challenge Mode de 60 segundos con pantalla final, retry y mejor score local.
 - Trayectoria predictiva toggleable.
 - Colisiones entre proyectiles.
 - Colisiones con paredes, suelo, techo y obstaculos circulares.
@@ -48,6 +49,7 @@ No requiere instalacion. Tambien esta listo para publicarse como sitio estatico 
 - `index.html`: estructura de la experiencia.
 - `styles.css`: layout, HUD, controles, responsive y estetica visual.
 - `app.js`: simulacion principal, render, input, IA de apuntado, sonido y scoring.
+- `docs/physics.md`: notas tecnicas sobre timestep fijo, integracion, colisiones, trayectoria y AI Aim.
 - `src/`: borrador modular en TypeScript para evolucionar la demo hacia una arquitectura de engine mas formal.
 - `SYSTEM_OVERVIEW.md`: explicacion de la arquitectura propuesta.
 
