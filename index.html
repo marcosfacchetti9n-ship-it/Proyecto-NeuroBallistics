@@ -6,7 +6,7 @@
     <title>NeuroBallistics Lab</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body class="mode-manual">
     <main class="app-shell">
       <section class="command-bar" aria-label="NeuroBallistics command center">
         <div class="brand-block">
@@ -18,8 +18,8 @@
           </p>
         </div>
 
-        <div class="hud">
-          <div><span data-i18n="hud_score">Score</span><strong id="score-count">0</strong></div>
+        <div class="hud" aria-label="Simulation telemetry">
+          <div class="hud-primary"><span data-i18n="hud_score">Score</span><strong id="score-count">0</strong></div>
           <div><span data-i18n="hud_high_score">Best</span><strong id="high-score">0</strong></div>
           <div><span data-i18n="hud_streak">Streak</span><strong id="streak-count">0</strong></div>
           <div><span data-i18n="hud_hits">Hits</span><strong id="hit-count">0</strong></div>
@@ -30,90 +30,103 @@
           <div class="hud-status"><span data-i18n="hud_status">Status</span><strong id="status-label">Ready</strong></div>
         </div>
 
-        <div class="top-actions">
+        <div class="top-actions" aria-label="Global controls">
           <button class="cta secondary" id="reset-sim" type="button" data-i18n="hero_reset">Reset</button>
-          <button class="cta secondary" id="toggle-pause" type="button" data-i18n="btn_pause">Pause</button>
-          <button class="cta secondary" id="toggle-language" type="button" aria-label="Toggle language">ES</button>
+          <button class="cta secondary" id="toggle-pause" type="button" data-i18n="btn_pause" aria-pressed="false">Pause</button>
+          <button class="cta secondary language-button" id="toggle-language" type="button" aria-label="Toggle language">ES</button>
         </div>
       </section>
 
       <section class="lab" id="lab">
-        <div class="canvas-wrap">
-          <canvas id="lab-canvas" width="1100" height="620"></canvas>
+        <div class="stage-shell">
+          <div class="canvas-wrap">
+            <canvas id="lab-canvas" width="1100" height="620"></canvas>
+            <div class="stage-readout" aria-hidden="true">
+              <span>120 Hz fixed dt</span>
+              <span>Canvas renderer</span>
+              <span>Impulse collisions</span>
+            </div>
+          </div>
         </div>
 
         <aside class="controls" aria-label="Simulation controls">
-          <div class="mode-strip">
-            <span data-i18n="hud_mode">Mode</span>
+          <div class="control-header">
+            <span data-i18n="control_deck">Control Deck</span>
             <strong id="mode-label">Manual</strong>
           </div>
 
-          <label>
-            <span data-i18n="control_gravity">Gravity</span>
-            <input id="gravity" type="range" min="50" max="300" step="1" value="160" />
-            <output id="gravity-value">160</output>
-          </label>
+          <section class="control-group" aria-labelledby="physics-title">
+            <h2 id="physics-title" data-i18n="group_physics">Physics</h2>
+            <label>
+              <span data-i18n="control_gravity">Gravity</span>
+              <input id="gravity" type="range" min="50" max="300" step="1" value="160" />
+              <output id="gravity-value">160</output>
+            </label>
 
-          <label>
-            <span data-i18n="control_friction">Ground Friction</span>
-            <input id="friction" type="range" min="0" max="0.95" step="0.01" value="0.72" />
-            <output id="friction-value">0.72</output>
-          </label>
+            <label>
+              <span data-i18n="control_friction">Ground Friction</span>
+              <input id="friction" type="range" min="0" max="0.95" step="0.01" value="0.72" />
+              <output id="friction-value">0.72</output>
+            </label>
 
-          <label>
-            <span data-i18n="control_mass">Ball Mass</span>
-            <input id="mass" type="range" min="0.5" max="6" step="0.1" value="1.5" />
-            <output id="mass-value">1.5</output>
-          </label>
+            <label>
+              <span data-i18n="control_mass">Ball Mass</span>
+              <input id="mass" type="range" min="0.5" max="6" step="0.1" value="1.5" />
+              <output id="mass-value">1.5</output>
+            </label>
 
-          <label>
-            <span data-i18n="control_speed">Muzzle Speed</span>
-            <input id="speed" type="range" min="180" max="900" step="5" value="520" />
-            <output id="speed-value">520</output>
-          </label>
+            <label>
+              <span data-i18n="control_speed">Muzzle Speed</span>
+              <input id="speed" type="range" min="180" max="900" step="5" value="520" />
+              <output id="speed-value">520</output>
+            </label>
 
-          <label>
-            <span data-i18n="control_fire_rate">Fire Rate</span>
-            <input id="fire-rate" type="range" min="1" max="14" step="0.5" value="8" />
-            <output id="fire-rate-value">8/s</output>
-          </label>
+            <label>
+              <span data-i18n="control_fire_rate">Fire Rate</span>
+              <input id="fire-rate" type="range" min="1" max="14" step="0.5" value="8" />
+              <output id="fire-rate-value">8/s</output>
+            </label>
+          </section>
 
-          <div class="telemetry-card">
-            <span data-i18n="hud_last_speed">Last Speed</span>
-            <strong id="last-speed">0 px/s</strong>
-            <span data-i18n="hud_sim_time">Sim Time</span>
-            <strong id="sim-time">0.00s</strong>
-          </div>
+          <section class="control-group" aria-labelledby="systems-title">
+            <h2 id="systems-title" data-i18n="group_systems">Systems</h2>
+            <div class="telemetry-card">
+              <span data-i18n="hud_last_speed">Last Speed</span>
+              <strong id="last-speed">0 px/s</strong>
+              <span data-i18n="hud_sim_time">Sim Time</span>
+              <strong id="sim-time">0.00s</strong>
+            </div>
 
-          <div class="buttons">
-            <button id="clear-projectiles" type="button" data-i18n="btn_clear">Clear Balls</button>
-            <button id="shuffle-arena" type="button" data-i18n="btn_shuffle">New Arena</button>
-            <button id="toggle-trails" type="button">Trails: On</button>
-            <button id="toggle-trajectory" type="button">Trajectory: On</button>
-            <button id="toggle-autofire" type="button">Auto Fire: Off</button>
-            <button id="toggle-ai" type="button">AI Aim: Off</button>
-            <button id="toggle-sound" type="button">Sound: On</button>
-          </div>
+            <div class="button-grid">
+              <button id="clear-projectiles" type="button" data-i18n="btn_clear">Clear Balls</button>
+              <button id="shuffle-arena" type="button" data-i18n="btn_shuffle">New Arena</button>
+              <button id="toggle-trails" type="button" aria-pressed="true">Trails: On</button>
+              <button id="toggle-trajectory" type="button" aria-pressed="true">Trajectory: On</button>
+              <button id="toggle-autofire" type="button" aria-pressed="false">Auto Fire: Off</button>
+              <button id="toggle-ai" type="button" aria-pressed="false">AI Aim: Off</button>
+              <button id="toggle-sound" type="button" aria-pressed="true">Sound: On</button>
+            </div>
+          </section>
         </aside>
       </section>
 
-      <section class="portfolio-notes">
+      <section class="build-notes" aria-label="Project notes">
         <article>
-          <h2 data-i18n="story_1_title">System Feel</h2>
+          <span data-i18n="story_1_title">System Feel</span>
           <p data-i18n="story_1_body">
             Fixed-timestep simulation, custom vector math, impulse-style collision
             response, and Canvas rendering keep the prototype inspectable and fast.
           </p>
         </article>
         <article>
-          <h2 data-i18n="story_2_title">Interaction Loop</h2>
+          <span data-i18n="story_2_title">Interaction Loop</span>
           <p data-i18n="story_2_body">
             Manual aiming, repeated fire, live tuning, trajectory prediction, hit scoring,
             and AI aiming make the sandbox feel like a small playable lab.
           </p>
         </article>
         <article>
-          <h2 data-i18n="story_3_title">Portfolio Angle</h2>
+          <span data-i18n="story_3_title">Portfolio Angle</span>
           <p data-i18n="story_3_body">
             The project is intentionally static and dependency-light, so a recruiter can
             open it quickly and inspect the core engineering decisions.

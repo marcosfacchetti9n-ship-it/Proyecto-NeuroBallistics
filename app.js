@@ -328,8 +328,29 @@ class Renderer {
     const ctx = this.context;
     const floorY = this.canvas.height - 26;
 
+    const sky = ctx.createLinearGradient(0, 0, 0, floorY);
+    sky.addColorStop(0, "#cfe9ee");
+    sky.addColorStop(0.55, "#eef4ee");
+    sky.addColorStop(1, "#f3ead8");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, this.canvas.width, floorY);
+
     ctx.save();
-    ctx.strokeStyle = "rgba(30, 41, 59, 0.08)";
+    ctx.globalAlpha = 0.32;
+    ctx.fillStyle = "#7fb7b2";
+    ctx.beginPath();
+    ctx.moveTo(0, floorY - 58);
+    for (let x = 0; x <= this.canvas.width + 80; x += 80) {
+      ctx.lineTo(x, floorY - 70 - Math.sin(x * 0.018) * 18);
+    }
+    ctx.lineTo(this.canvas.width, floorY);
+    ctx.lineTo(0, floorY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(21, 33, 30, 0.075)";
     ctx.lineWidth = 1;
     for (let x = 0; x <= this.canvas.width; x += 48) {
       ctx.beginPath();
@@ -345,16 +366,36 @@ class Renderer {
     }
     ctx.restore();
 
-    ctx.fillStyle = "#c8ad82";
+    const ground = ctx.createLinearGradient(0, floorY, 0, this.canvas.height);
+    ground.addColorStop(0, "#c7b37c");
+    ground.addColorStop(1, "#92724c");
+    ctx.fillStyle = ground;
     ctx.fillRect(0, floorY, this.canvas.width, this.canvas.height - floorY);
 
-    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.save();
+    ctx.strokeStyle = "rgba(21, 33, 30, 0.14)";
+    for (let x = -20; x < this.canvas.width; x += 28) {
+      ctx.beginPath();
+      ctx.moveTo(x, floorY + 26);
+      ctx.lineTo(x + 42, floorY);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
     ctx.fillRect(0, floorY, this.canvas.width, 5);
   }
 
   renderObstacles() {
     const ctx = this.context;
     for (const obstacle of this.world.obstacles) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(obstacle.position.x + 8, obstacle.position.y + obstacle.radius * 0.86, obstacle.radius * 0.9, obstacle.radius * 0.22, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(21, 33, 30, 0.18)";
+      ctx.fill();
+      ctx.restore();
+
       ctx.beginPath();
       ctx.arc(obstacle.position.x, obstacle.position.y, obstacle.radius, 0, Math.PI * 2);
       const gradient = ctx.createRadialGradient(
@@ -369,8 +410,14 @@ class Renderer {
       gradient.addColorStop(1, "#7c5b3b");
       ctx.fillStyle = gradient;
       ctx.fill();
-      ctx.strokeStyle = "rgba(30, 41, 59, 0.22)";
+      ctx.strokeStyle = "rgba(21, 33, 30, 0.28)";
       ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(obstacle.position.x, obstacle.position.y, obstacle.radius * 0.62, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
+      ctx.lineWidth = 3;
       ctx.stroke();
     }
   }
@@ -394,6 +441,11 @@ class Renderer {
 
     ctx.save();
     ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.ellipse(base.x, standTop + 58, 58, 15, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(21, 33, 30, 0.18)";
+    ctx.fill();
+
     ctx.fillStyle = "#7c2d12";
     ctx.fillRect(base.x - 12, standTop, 24, 44);
     ctx.fillStyle = "#57534e";
@@ -404,6 +456,13 @@ class Renderer {
     ctx.beginPath();
     ctx.moveTo(base.x, base.y);
     ctx.lineTo(muzzle.x, muzzle.y);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(base.x + Math.cos(this.turret.angle - 0.18) * 8, base.y + Math.sin(this.turret.angle - 0.18) * 8);
+    ctx.lineTo(muzzle.x - Math.cos(this.turret.angle) * 12, muzzle.y - Math.sin(this.turret.angle) * 12);
     ctx.stroke();
 
     ctx.beginPath();
@@ -438,6 +497,11 @@ class Renderer {
           color: projectile.color
         });
       }
+
+      ctx.beginPath();
+      ctx.ellipse(projectile.position.x + 5, projectile.position.y + projectile.radius * 0.8, projectile.radius * 0.75, projectile.radius * 0.24, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(21, 33, 30, 0.16)";
+      ctx.fill();
 
       ctx.beginPath();
       ctx.arc(projectile.position.x, projectile.position.y, projectile.radius, 0, Math.PI * 2);
@@ -712,6 +776,9 @@ Object.assign(translations.en, {
   hero_lede:
     "Aim the turret, tune the physics, and use manual or AI-assisted fire to hit a moving target.",
   hero_reset: "Reset",
+  control_deck: "Control Deck",
+  group_physics: "Physics",
+  group_systems: "Systems",
   hud_projectiles: "Balls",
   hud_high_score: "Best",
   hud_streak: "Streak",
@@ -737,6 +804,9 @@ Object.assign(translations.es, {
   hero_lede:
     "Apunta la torreta, ajusta la fisica y usa disparo manual o asistido por IA para pegarle a un objetivo en movimiento.",
   hero_reset: "Reiniciar",
+  control_deck: "Panel de Control",
+  group_physics: "Fisica",
+  group_systems: "Sistemas",
   hud_projectiles: "Bolas",
   hud_high_score: "Mejor",
   hud_streak: "Racha",
@@ -787,6 +857,19 @@ function updateModeLabel() {
   modeLabelEl.textContent = inputState.aiAim ? t("mode_ai") : inputState.autoFire ? t("mode_auto") : t("mode_manual");
 }
 
+function setPressed(button, pressed) {
+  button.setAttribute("aria-pressed", String(pressed));
+  button.classList.toggle("is-active", pressed);
+}
+
+function syncBodyState() {
+  document.body.classList.toggle("mode-ai", inputState.aiAim);
+  document.body.classList.toggle("mode-auto", !inputState.aiAim && inputState.autoFire);
+  document.body.classList.toggle("mode-manual", !inputState.aiAim && !inputState.autoFire);
+  document.body.classList.toggle("is-paused", isPaused);
+  document.body.classList.toggle("sound-off", !soundEngine.enabled);
+}
+
 function syncButtonLabels() {
   const on = language === "es" ? "On" : "On";
   const off = language === "es" ? "Off" : "Off";
@@ -802,6 +885,13 @@ function syncButtonLabels() {
   aiAimButton.textContent = `${aiAimLabel}: ${inputState.aiAim ? on : off}`;
   soundButton.textContent = `${soundLabel}: ${soundEngine.enabled ? on : off}`;
   pauseButton.textContent = isPaused ? t("btn_resume") : t("btn_pause");
+  setPressed(trailButton, renderer.showTrails);
+  setPressed(trajectoryButton, inputState.showTrajectory);
+  setPressed(autoFireButton, inputState.autoFire);
+  setPressed(aiAimButton, inputState.aiAim);
+  setPressed(soundButton, soundEngine.enabled);
+  setPressed(pauseButton, isPaused);
+  syncBodyState();
 }
 
 const world = new PhysicsWorld(canvas.width, canvas.height);
